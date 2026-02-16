@@ -7,8 +7,17 @@ set -euo pipefail
 #  Installs packages, builds suckless tools, and
 #  symlinks dotfiles into $HOME.
 #
+#  Usage:
+#    bash setup.sh              # Full setup (packages + build + dotfiles)
+#    bash setup.sh --skip-build # Skip suckless rebuilds (safe from st)
+#
 #  Called by: install.sh (via proot-distro login)
 #######################################################
+
+SKIP_BUILD=false
+if [[ "${1:-}" == "--skip-build" ]]; then
+    SKIP_BUILD=true
+fi
 
 DOTFILES_DIR="/root/.dotfiles"
 
@@ -104,11 +113,17 @@ fi
 
 # ============== STEP 3: BUILD SUCKLESS TOOLS ==============
 
+SUCKLESS_DIR="${DOTFILES_DIR}/suckless"
+
+if [[ "$SKIP_BUILD" == true ]]; then
+    echo ""
+    echo -e "${PURPLE}[3/7] Skipping suckless builds (--skip-build)${NC}"
+    echo ""
+else
+
 echo ""
 echo -e "${PURPLE}[3/7] Building suckless tools...${NC}"
 echo ""
-
-SUCKLESS_DIR="${DOTFILES_DIR}/suckless"
 BUILD_DIR="/tmp/suckless-build"
 mkdir -p "$BUILD_DIR"
 
@@ -248,6 +263,8 @@ build_st
 
 # Cleanup build directory
 rm -rf "$BUILD_DIR"
+
+fi  # end SKIP_BUILD check
 
 # ============== STEP 4: SYMLINK DOTFILES ==============
 
