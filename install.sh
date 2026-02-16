@@ -93,6 +93,35 @@ install_vulkan_loader() {
     return 1
 }
 
+bootstrap_proot_distro() {
+    local tmp_dir="${TMPDIR:-/data/data/com.termux/files/usr/tmp}/proot-distro-bootstrap"
+
+    echo -e "  ${YELLOW}→${NC} Bootstrapping proot-distro from upstream source"
+
+    run_cmd "Installing proot runtime..." pkg install -y proot
+    run_cmd "Installing curl for bootstrap..." pkg install -y curl
+    run_cmd "Installing tar for bootstrap..." pkg install -y tar
+
+    rm -rf "$tmp_dir"
+    mkdir -p "$tmp_dir"
+
+    run_cmd "Downloading proot-distro release archive..." curl -fsSL \
+        -o "${tmp_dir}/proot-distro.tar.gz" \
+        "https://github.com/termux/proot-distro/archive/refs/heads/master.tar.gz"
+    run_cmd "Extracting proot-distro archive..." tar -xzf \
+        "${tmp_dir}/proot-distro.tar.gz" -C "$tmp_dir"
+    run_cmd "Installing proot-distro script files..." bash -c \
+        "cd \"${tmp_dir}/proot-distro-master\" && TERMUX_PREFIX=\"${PREFIX}\" TERMUX_APP_PACKAGE=com.termux TERMUX_ANDROID_HOME=\"${HOME}\" ./install.sh"
+
+    if command -v proot-distro > /dev/null 2>&1; then
+        echo -e "  ${GREEN}✓${NC} Bootstrapped proot-distro successfully"
+        return 0
+    fi
+
+    echo -e "  ${RED}✗${NC} proot-distro bootstrap failed"
+    return 1
+}
+
 # Copy a config file, backing up the destination if it differs
 safe_copy() {
     local src=$1
@@ -237,7 +266,10 @@ step_proot_arch() {
         run_cmd "Refreshing package lists..." pkg update -y
         run_cmd "Repairing broken dependencies..." apt --fix-broken install -y
         run_cmd "Upgrading packages after repair..." pkg upgrade -y
-        install_pkg "proot-distro" "proot-distro"
+        if ! install_pkg "proot-distro" "proot-distro"; then
+            echo -e "  ${YELLOW}!${NC} proot-distro package install still failing"
+            bootstrap_proot_distro
+        fi
     fi
 
     # Install Arch Linux if not already present
