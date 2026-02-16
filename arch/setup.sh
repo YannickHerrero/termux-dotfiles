@@ -232,7 +232,7 @@ build_st() {
     sed -i 's|^static int bellvolume.*|static int bellvolume = 0;|' "$conf"
 
     # Alpha (transparency — requires picom compositor)
-    sed -i 's|^float alpha.*|float alpha = 0.85;|' "$conf"
+    sed -i 's|^float alpha =.*|float alpha = 0.85;|' "$conf"
 
     # Catppuccin Mocha colors — replace the entire colorname array
     # Reference: https://github.com/catppuccin/st
