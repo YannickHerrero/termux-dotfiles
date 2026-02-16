@@ -85,4 +85,4 @@ echo ""
 
 proot-distro login archlinux --shared-tmp -- \
     env DISPLAY=:0 PULSE_SERVER=127.0.0.1 \
-    sh -l -c "exec ~/.xinitrc"
+    sh -l -c "if [ ! -f \"\$HOME/.xinitrc\" ] && [ -f \"\$HOME/.dotfiles/home/.xinitrc\" ]; then ln -sf \"\$HOME/.dotfiles/home/.xinitrc\" \"\$HOME/.xinitrc\"; fi; chmod +x \"\$HOME/.xinitrc\" 2>/dev/null || true; if [ ! -f \"\$HOME/.xinitrc\" ]; then echo 'Error: ~/.xinitrc not found. Re-run install.sh to finish Arch setup.' >&2; exit 1; fi; exec \"\$HOME/.xinitrc\""
