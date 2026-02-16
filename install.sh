@@ -64,8 +64,13 @@ install_pkg() {
     local name=${2:-$pkg}
 
     echo -e "  ${YELLOW}→${NC} Installing ${name} (${pkg})"
-    pkg install -y "$pkg"
-    echo -e "  ${GREEN}✓${NC} Installed ${name}"
+    if pkg install -y "$pkg"; then
+        echo -e "  ${GREEN}✓${NC} Installed ${name}"
+        return 0
+    fi
+
+    echo -e "  ${RED}✗${NC} Failed to install ${name}"
+    return 1
 }
 
 install_vulkan_loader() {
@@ -270,6 +275,12 @@ step_proot_arch() {
             echo -e "  ${YELLOW}!${NC} proot-distro package install still failing"
             bootstrap_proot_distro
         fi
+    fi
+
+    if ! command -v proot-distro > /dev/null 2>&1; then
+        echo -e "  ${RED}✗${NC} proot-distro is still unavailable after retries"
+        echo -e "    Check network/mirror issues, then re-run installer"
+        return 1
     fi
 
     # Install Arch Linux if not already present
