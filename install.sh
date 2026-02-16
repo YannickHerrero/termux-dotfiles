@@ -127,6 +127,26 @@ bootstrap_proot_distro() {
     return 1
 }
 
+is_arch_installed() {
+    local arch_rootfs="${PREFIX}/var/lib/proot-distro/installed-rootfs/archlinux"
+
+    if ! command -v proot-distro > /dev/null 2>&1; then
+        return 1
+    fi
+
+    # Most reliable check: can we enter the distro?
+    if proot-distro login archlinux -- true > /dev/null 2>&1; then
+        return 0
+    fi
+
+    # Fallback for partially configured states
+    if [[ -d "$arch_rootfs" ]]; then
+        return 0
+    fi
+
+    return 1
+}
+
 # Copy a config file, backing up the destination if it differs
 safe_copy() {
     local src=$1
@@ -284,7 +304,7 @@ step_proot_arch() {
     fi
 
     # Install Arch Linux if not already present
-    if proot-distro list 2>/dev/null | grep -q "archlinux.*Installed"; then
+    if is_arch_installed; then
         echo -e "  ${GREEN}✓${NC} Arch Linux already installed"
     else
         run_cmd "Installing Arch Linux rootfs..." proot-distro install archlinux
@@ -304,19 +324,14 @@ step_arch_setup() {
         return 1
     fi
 
-    if ! proot-distro list 2>/dev/null | grep -q "archlinux.*Installed"; then
+    if ! is_arch_installed; then
         echo -e "  ${RED}✗${NC} Arch Linux rootfs not found"
         echo -e "    Install it with: ${YELLOW}proot-distro install archlinux${NC}"
         return 1
     fi
 
     # Copy arch/ directory into the Arch rootfs
-    local arch_rootfs
-    arch_rootfs="$(proot-distro list 2>/dev/null | grep -A1 "archlinux" | grep -oP '/[^ ]+' | head -1 || true)"
-    if [[ -z "$arch_rootfs" ]]; then
-        # Fallback to default path
-        arch_rootfs="/data/data/com.termux/files/usr/var/lib/proot-distro/installed-rootfs/archlinux"
-    fi
+    local arch_rootfs="${PREFIX}/var/lib/proot-distro/installed-rootfs/archlinux"
 
     echo -e "  ${YELLOW}⏳${NC} Copying dotfiles into Arch rootfs..."
     local arch_home="${arch_rootfs}/root"
