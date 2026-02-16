@@ -35,7 +35,7 @@ msg_error() {
 
 # ============== STEP 1: SYSTEM UPDATE ==============
 
-echo -e "${PURPLE}[1/5] Updating Arch packages...${NC}"
+echo -e "${PURPLE}[1/7] Updating Arch packages...${NC}"
 echo ""
 
 pacman -Syu --noconfirm
@@ -44,7 +44,7 @@ msg "System updated"
 # ============== STEP 2: INSTALL PACKAGES ==============
 
 echo ""
-echo -e "${PURPLE}[2/5] Installing packages...${NC}"
+echo -e "${PURPLE}[2/7] Installing packages...${NC}"
 echo ""
 
 # Core X11 / desktop dependencies
@@ -75,6 +75,19 @@ pacman -S --needed --noconfirm \
     base-devel git
 msg "Build tools installed"
 
+# Shell and CLI tools
+msg_start "Installing zsh and CLI tools..."
+pacman -S --needed --noconfirm \
+    zsh zoxide eza bat fzf
+msg "zsh + CLI tools installed"
+
+msg_start "Installing git-delta (optional)..."
+if pacman -S --needed --noconfirm git-delta; then
+    msg "git-delta installed"
+else
+    msg_error "git-delta unavailable, git will use default pager"
+fi
+
 # Editor and AI coding tools
 msg_start "Installing Neovim and dependencies..."
 pacman -S --needed --noconfirm \
@@ -91,7 +104,7 @@ fi
 # ============== STEP 3: BUILD SUCKLESS TOOLS ==============
 
 echo ""
-echo -e "${PURPLE}[3/5] Building suckless tools...${NC}"
+echo -e "${PURPLE}[3/7] Building suckless tools...${NC}"
 echo ""
 
 SUCKLESS_DIR="${DOTFILES_DIR}/suckless"
@@ -222,7 +235,7 @@ rm -rf "$BUILD_DIR"
 # ============== STEP 4: SYMLINK DOTFILES ==============
 
 echo ""
-echo -e "${PURPLE}[4/5] Linking dotfiles...${NC}"
+echo -e "${PURPLE}[4/7] Linking dotfiles...${NC}"
 echo ""
 
 HOME_SRC="${DOTFILES_DIR}/home"
@@ -233,6 +246,35 @@ if [[ -d "$HOME_SRC" ]]; then
     if [[ -f "${HOME_SRC}/.xinitrc" ]]; then
         ln -sf "${HOME_SRC}/.xinitrc" ~/.xinitrc
         msg "Linked .xinitrc"
+    fi
+
+    # .zshrc
+    if [[ -f "${HOME_SRC}/.zshrc" ]]; then
+        ln -sf "${HOME_SRC}/.zshrc" ~/.zshrc
+        msg "Linked .zshrc"
+    fi
+
+    # .gitconfig
+    if [[ -f "${HOME_SRC}/.gitconfig" ]]; then
+        ln -sf "${HOME_SRC}/.gitconfig" ~/.gitconfig
+        msg "Linked .gitconfig"
+    fi
+
+    # .gitconfig-delta (conditional delta pager config)
+    if [[ -f "${HOME_SRC}/.gitconfig-delta" ]]; then
+        ln -sf "${HOME_SRC}/.gitconfig-delta" ~/.gitconfig-delta
+        msg "Linked .gitconfig-delta"
+    fi
+
+    # .zsh/ directory (individual module files)
+    if [[ -d "${HOME_SRC}/.zsh" ]]; then
+        mkdir -p ~/.zsh
+        for zsh_file in "${HOME_SRC}/.zsh/"*.zsh; do
+            if [[ -f "$zsh_file" ]]; then
+                ln -sf "$zsh_file" ~/.zsh/"$(basename "$zsh_file")"
+            fi
+        done
+        msg "Linked .zsh/ modules"
     fi
 
     # .config directories
@@ -259,10 +301,47 @@ if [[ -d "${SUCKLESS_DIR}/dwmblocks/scripts" ]]; then
     msg "Linked dwmblocks scripts"
 fi
 
-# ============== STEP 5: NEOVIM PLUGIN BOOTSTRAP ==============
+# ============== STEP 5: INSTALL OH-MY-POSH ==============
 
 echo ""
-echo -e "${PURPLE}[5/5] Bootstrapping Neovim plugins...${NC}"
+echo -e "${PURPLE}[5/7] Installing oh-my-posh...${NC}"
+echo ""
+
+if command -v oh-my-posh > /dev/null 2>&1; then
+    msg "oh-my-posh already installed"
+else
+    msg_start "Downloading oh-my-posh binary..."
+    OMP_INSTALL_DIR="/usr/local/bin"
+    ARCH=$(uname -m)
+    case "$ARCH" in
+        aarch64) OMP_ARCH="arm64" ;;
+        x86_64)  OMP_ARCH="amd64" ;;
+        armv7l)  OMP_ARCH="arm" ;;
+        *)       OMP_ARCH="$ARCH" ;;
+    esac
+    curl -fsSL "https://github.com/JanDeDobbeleer/oh-my-posh/releases/latest/download/posh-linux-${OMP_ARCH}" -o "${OMP_INSTALL_DIR}/oh-my-posh"
+    chmod +x "${OMP_INSTALL_DIR}/oh-my-posh"
+    msg "oh-my-posh installed"
+fi
+
+# ============== STEP 6: SET ZSH AS DEFAULT SHELL ==============
+
+echo ""
+echo -e "${PURPLE}[6/7] Setting zsh as default shell...${NC}"
+echo ""
+
+if [[ "$(basename "$SHELL")" == "zsh" ]]; then
+    msg "zsh is already the default shell"
+else
+    msg_start "Changing default shell to zsh..."
+    chsh -s /bin/zsh
+    msg "Default shell set to zsh"
+fi
+
+# ============== STEP 7: NEOVIM PLUGIN BOOTSTRAP ==============
+
+echo ""
+echo -e "${PURPLE}[7/7] Bootstrapping Neovim plugins...${NC}"
 echo ""
 
 # Run nvim headless to trigger lazy.nvim plugin installation

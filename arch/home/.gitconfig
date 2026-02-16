@@ -1,0 +1,32 @@
+[alias]
+  st = status
+  ck = checkout
+  lo = log
+[user]
+  name = YannickHerrero
+  email = yannick.herrero@proton.me
+[core]
+  editor = nvim
+  autocrlf = input
+  excludesfile = ~/.gitignore
+[pull]
+  rebase = false
+[merge]
+  tool = nvimdiff
+  conflictstyle = diff3
+[diff]
+  colorMoved = default
+  tool = nvimdiff
+  guitool = nvimdiff
+[mergetool]
+  keepBackup = false
+  trustExitCode = false
+  prompt = true
+[difftool]
+  prompt = false
+[mergetool "nvimdiff"]
+  layout = "LOCAL,BASE,REMOTE / MERGED"
+
+# Delta pager (only active if git-delta is installed)
+[include]
+  path = ~/.gitconfig-delta

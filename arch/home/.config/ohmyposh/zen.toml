@@ -1,0 +1,80 @@
+"$schema" = "https://raw.githubusercontent.com/JanDeDobbeleer/oh-my-posh/main/themes/schema.json"
+final_space = true
+version = 3
+
+[[blocks]]
+type = "prompt"
+alignment = "left"
+newline = true
+  [[blocks.segments]]
+  type = "text"
+  style = "plain"
+  background = "transparent"
+  template = ""
+  [[blocks.segments]]
+  type = "path"
+  style = "plain"
+  background = "transparent"
+  foreground = "p:path"
+  template = "{{ .Path }}"
+    [blocks.segments.properties]
+      style = "full"
+
+[[blocks.segments]]
+    type = 'git'
+    style = 'plain'
+    foreground = 'p:git_branch'
+    background = 'transparent'
+    template = ' {{ .HEAD }}{{ if or (.Working.Changed) (.Staging.Changed) }}*{{ end }} <p:git_status>{{ if gt .Behind 0 }}⇣{{ end }}{{ if gt .Ahead 0 }}⇡{{ end }}</>'
+    [blocks.segments.properties]
+      branch_icon = ''
+      commit_icon = '@'
+      fetch_status = true
+
+[[blocks]]
+  type = 'rprompt'
+  overflow = 'hidden'
+  [[blocks.segments]]
+    type = 'executiontime'
+    style = 'plain'
+    foreground = 'p:duration'
+    background = 'transparent'
+    template = '{{ .FormattedMs }}'
+    [blocks.segments.properties]
+      threshold = 1000
+
+[[blocks]]
+  type = 'prompt'
+  alignment = 'left'
+  newline = true
+  [[blocks.segments]]
+    type = 'text'
+    style = 'plain'
+    foreground_templates = [
+      "{{if gt .Code 0}}p:prompt_error{{end}}",
+      "{{if eq .Code 0}}p:prompt{{end}}",
+    ]
+    background = 'transparent'
+    template = '>'
+
+[transient_prompt]
+  foreground_templates = [
+    "{{if gt .Code 0}}p:prompt_error{{end}}",
+    "{{if eq .Code 0}}p:prompt{{end}}",
+  ]
+  background = 'transparent'
+  template = '>'
+
+[secondary_prompt]
+  foreground = 'p:prompt'
+  background = 'transparent'
+  template = '>>'
+
+[palette]
+# Semantic colors - updated by set-theme script
+path = "#b4befe"
+prompt = "#fab387"
+prompt_error = "#f38ba8"
+git_branch = "#6c7086"
+git_status = "#94e2d5"
+duration = "#f9e2af"
