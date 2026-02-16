@@ -119,8 +119,8 @@ build_suckless() {
         done
     fi
 
-    # Copy config.h if it exists
-    if [[ -f "${SUCKLESS_DIR}/${name}/config.h" ]]; then
+    # Copy config.h if it exists (skip for st -- handled separately)
+    if [[ "$name" != "st" ]] && [[ -f "${SUCKLESS_DIR}/${name}/config.h" ]]; then
         cp "${SUCKLESS_DIR}/${name}/config.h" "${build_path}/config.h"
     fi
 
@@ -131,9 +131,73 @@ build_suckless() {
 }
 
 build_suckless "dwm"       "https://git.suckless.org/dwm"       "6.5"
-build_suckless "st"        "https://git.suckless.org/st"        "0.9.2"
 build_suckless "dmenu"     "https://git.suckless.org/dmenu"     "5.3"
 build_suckless "dwmblocks" "https://github.com/torrinfail/dwmblocks.git" ""
+
+# Build st with sed-based customization of config.def.h
+build_st() {
+    local build_path="${BUILD_DIR}/st"
+
+    msg_start "Building st..."
+
+    if [[ -d "$build_path" ]]; then
+        rm -rf "$build_path"
+    fi
+    git clone "https://git.suckless.org/st" "$build_path" > /dev/null 2>&1
+    git -C "$build_path" checkout "0.9.2" > /dev/null 2>&1
+
+    # Apply patches
+    if [[ -d "${SUCKLESS_DIR}/st/patches" ]]; then
+        for p in "${SUCKLESS_DIR}/st/patches/"*.diff; do
+            if [[ -f "$p" ]]; then
+                git -C "$build_path" apply "$p" 2>/dev/null || \
+                    patch -d "$build_path" -p1 < "$p" 2>/dev/null || \
+                    msg_error "Patch failed: $(basename "$p")"
+            fi
+        done
+    fi
+
+    # Customize config.def.h via sed (avoids maintaining a full config.h)
+    local conf="${build_path}/config.def.h"
+
+    # Font
+    sed -i 's|^static char \*font = .*|static char *font = "DejaVu Sans Mono:pixelsize=16:antialias=true:autohint=true";|' "$conf"
+
+    # Border
+    sed -i 's|^static int borderpx.*|static int borderpx = 2;|' "$conf"
+
+    # Tab width
+    sed -i 's|^unsigned int tabspaces.*|unsigned int tabspaces = 4;|' "$conf"
+
+    # Disable bell
+    sed -i 's|^static int bellvolume.*|static int bellvolume = 0;|' "$conf"
+
+    # Gruvbox dark colors
+    sed -i '/^static const char \*colorname/,/^};/{
+        s|"black"|"#282828"|
+        s|"red3"|"#cc241d"|
+        s|"green3"|"#98971a"|
+        s|"yellow3"|"#d79921"|
+        s|"blue2"|"#458588"|
+        s|"magenta3"|"#b16286"|
+        s|"cyan3"|"#689d6a"|
+        s|"gray90"|"#a89984"|
+        s|"gray50"|"#928374"|
+        s|"red"|"#fb4934"|
+        s|"green"|"#b8bb26"|
+        s|"yellow"|"#fabd2f"|
+        s|"\#4682b4"|"#83a598"|
+        s|"magenta"|"#d3869b"|
+        s|"cyan"|"#8ec07c"|
+        s|"white"|"#ebdbb2"|
+    }' "$conf"
+
+    make -C "$build_path" clean install > /dev/null 2>&1
+
+    msg "Built and installed st"
+}
+
+build_st
 
 # Cleanup build directory
 rm -rf "$BUILD_DIR"
