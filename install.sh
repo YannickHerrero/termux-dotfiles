@@ -68,6 +68,31 @@ install_pkg() {
     echo -e "  ${GREEN}✓${NC} Installed ${name}"
 }
 
+install_vulkan_loader() {
+    echo -e "  ${YELLOW}→${NC} Installing Vulkan Loader (preferred: vulkan-loader-generic)"
+
+    if pkg install -y "vulkan-loader-generic"; then
+        echo -e "  ${GREEN}✓${NC} Installed Vulkan Loader (generic)"
+        return 0
+    fi
+
+    echo -e "  ${YELLOW}!${NC} vulkan-loader-generic failed, trying vulkan-loader-android"
+    if pkg install -y "vulkan-loader-android"; then
+        echo -e "  ${GREEN}✓${NC} Installed Vulkan Loader (android)"
+        return 0
+    fi
+
+    if [[ -e "${PREFIX}/lib/libvulkan.so" ]] || [[ -e "${PREFIX}/lib/libvulkan.so.1" ]]; then
+        echo -e "  ${YELLOW}!${NC} Vulkan loader package install failed, but libvulkan already exists"
+        echo -e "    Continuing with existing Vulkan loader at ${PREFIX}/lib"
+        return 0
+    fi
+
+    echo -e "  ${RED}✗${NC} Failed to install any Vulkan loader package"
+    echo -e "    Try manually: ${YELLOW}pkg install vulkan-loader-generic${NC}"
+    return 1
+}
+
 # Copy a config file, backing up the destination if it differs
 safe_copy() {
     local src=$1
@@ -187,7 +212,7 @@ step_gpu() {
         install_pkg "mesa-vulkan-icd-swrast" "Software Vulkan Renderer"
     fi
 
-    install_pkg "vulkan-loader-android" "Vulkan Loader"
+    install_vulkan_loader
 
     # GPU config is sourced from ~/.zshrc (installed by step_shell)
     # Also keep a bashrc fallback for non-interactive sessions
