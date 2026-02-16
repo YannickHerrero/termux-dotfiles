@@ -51,34 +51,21 @@ update_progress() {
     echo ""
 }
 
-spinner() {
-    local pid=$1
-    local message=$2
-    local spin='⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏'
-    local i=0
-    local exit_code=0
+run_cmd() {
+    local message=$1
+    shift
 
-    while kill -0 "$pid" 2>/dev/null; do
-        i=$(((i + 1) % 10))
-        printf "\r  ${YELLOW}⏳${NC} %s ${CYAN}%s${NC}  " "$message" "${spin:$i:1}"
-        sleep 0.1
-    done
-
-    wait "$pid" 2>/dev/null || exit_code=$?
-
-    if [[ $exit_code -eq 0 ]]; then
-        printf "\r  ${GREEN}✓${NC} %s                    \n" "$message"
-    else
-        printf "\r  ${RED}✗${NC} %s ${RED}(failed)${NC}     \n" "$message"
-    fi
+    echo -e "  ${YELLOW}→${NC} ${message}"
+    "${@}"
 }
 
 install_pkg() {
     local pkg=$1
     local name=${2:-$pkg}
 
-    (pkg install -y "$pkg" > /dev/null 2>&1) &
-    spinner $! "Installing ${name}..."
+    echo -e "  ${YELLOW}→${NC} Installing ${name} (${pkg})"
+    pkg install -y "$pkg"
+    echo -e "  ${GREEN}✓${NC} Installed ${name}"
 }
 
 # Copy a config file, backing up the destination if it differs
@@ -148,11 +135,9 @@ step_update() {
     echo -e "${PURPLE}[Step ${CURRENT_STEP}/${TOTAL_STEPS}] Updating system packages...${NC}"
     echo ""
 
-    (pkg update -y > /dev/null 2>&1 || true) &
-    spinner $! "Updating package lists..."
+    run_cmd "Updating package lists..." pkg update -y
 
-    (pkg upgrade -y > /dev/null 2>&1 || true) &
-    spinner $! "Upgrading installed packages..."
+    run_cmd "Upgrading installed packages..." pkg upgrade -y
 }
 
 # ============== STEP 2: ADD REPOSITORIES ==============
@@ -228,8 +213,8 @@ step_proot_arch() {
     if proot-distro list 2>/dev/null | grep -q "archlinux.*Installed"; then
         echo -e "  ${GREEN}✓${NC} Arch Linux already installed"
     else
-        (proot-distro install archlinux > /dev/null 2>&1) &
-        spinner $! "Installing Arch Linux rootfs..."
+        run_cmd "Installing Arch Linux rootfs..." proot-distro install archlinux
+        echo -e "  ${GREEN}✓${NC} Arch Linux rootfs installed"
     fi
 }
 
@@ -240,9 +225,20 @@ step_arch_setup() {
     echo -e "${PURPLE}[Step ${CURRENT_STEP}/${TOTAL_STEPS}] Setting up Arch Linux environment...${NC}"
     echo ""
 
+    if ! command -v proot-distro > /dev/null 2>&1; then
+        echo -e "  ${RED}✗${NC} proot-distro is not installed"
+        return 1
+    fi
+
+    if ! proot-distro list 2>/dev/null | grep -q "archlinux.*Installed"; then
+        echo -e "  ${RED}✗${NC} Arch Linux rootfs not found"
+        echo -e "    Install it with: ${YELLOW}proot-distro install archlinux${NC}"
+        return 1
+    fi
+
     # Copy arch/ directory into the Arch rootfs
     local arch_rootfs
-    arch_rootfs="$(proot-distro list 2>/dev/null | grep -A1 "archlinux" | grep -oP '/[^ ]+' | head -1)"
+    arch_rootfs="$(proot-distro list 2>/dev/null | grep -A1 "archlinux" | grep -oP '/[^ ]+' | head -1 || true)"
     if [[ -z "$arch_rootfs" ]]; then
         # Fallback to default path
         arch_rootfs="/data/data/com.termux/files/usr/var/lib/proot-distro/installed-rootfs/archlinux"
