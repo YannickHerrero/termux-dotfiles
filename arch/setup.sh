@@ -66,6 +66,7 @@ msg_start "Installing Firefox, ranger, and utilities..."
 pacman -S --needed --noconfirm \
     firefox ranger \
     feh xclip xdotool \
+    fastfetch btop \
     ttf-dejavu ttf-liberation noto-fonts
 msg "Applications installed"
 
