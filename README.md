@@ -12,7 +12,7 @@ and audio bridged from the Termux host. No root required.
 ┌──────────────────────────────────────────────────┐
 │  Termux (native host)                            │
 │                                                  │
-│  zsh          ── shell (zinit + starship)         │
+│  zsh          ── shell (zinit + starship)        │
 │  termux-x11   ── X11 display server              │
 │  pulseaudio   ── audio (TCP bridge to Android)   │
 │  Mesa Zink    ── OpenGL → Vulkan translation     │
