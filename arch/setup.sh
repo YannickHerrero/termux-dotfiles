@@ -195,33 +195,44 @@ build_st() {
     # Disable bell
     sed -i 's|^static int bellvolume.*|static int bellvolume = 0;|' "$conf"
 
-    # Catppuccin Mocha colors
-    sed -i '/^static const char \*colorname/,/^};/{
-        s|"black"|"#45475a"|
-        s|"red3"|"#f38ba8"|
-        s|"green3"|"#a6e3a1"|
-        s|"yellow3"|"#f9e2af"|
-        s|"blue2"|"#89b4fa"|
-        s|"magenta3"|"#f5c2e7"|
-        s|"cyan3"|"#94e2d5"|
-        s|"gray90"|"#bac2de"|
-        s|"gray50"|"#585b70"|
-        s|"red"|"#f38ba8"|
-        s|"green"|"#a6e3a1"|
-        s|"yellow"|"#f9e2af"|
-        s|"\#4682b4"|"#89b4fa"|
-        s|"magenta"|"#f5c2e7"|
-        s|"cyan"|"#94e2d5"|
-        s|"white"|"#a6adc8"|
-    }' "$conf"
+    # Catppuccin Mocha colors — replace the entire colorname array
+    # Reference: https://github.com/catppuccin/st
+    sed -i '/^static const char \*colorname/,/^};/c\
+static const char *colorname[] = {\
+	/* 8 normal colors */\
+	"#45475a", /* black   (Surface1)  */\
+	"#f38ba8", /* red     (Red)       */\
+	"#a6e3a1", /* green   (Green)     */\
+	"#f9e2af", /* yellow  (Yellow)    */\
+	"#89b4fa", /* blue    (Blue)      */\
+	"#f5c2e7", /* magenta (Pink)      */\
+	"#94e2d5", /* cyan    (Teal)      */\
+	"#bac2de", /* white   (Subtext1)  */\
+\
+	/* 8 bright colors */\
+	"#585b70", /* bright black   (Surface2)  */\
+	"#f38ba8", /* bright red     (Red)       */\
+	"#a6e3a1", /* bright green   (Green)     */\
+	"#f9e2af", /* bright yellow  (Yellow)    */\
+	"#89b4fa", /* bright blue    (Blue)      */\
+	"#f5c2e7", /* bright magenta (Pink)      */\
+	"#94e2d5", /* bright cyan    (Teal)      */\
+	"#a6adc8", /* bright white   (Subtext0)  */\
+\
+	[255] = 0,\
+\
+	/* special colors (256+) */\
+	"#f5e0dc", /* 256: cursor       (Rosewater) */\
+	"#cdd6f4", /* 257: reverse cursor (Text)    */\
+	"#cdd6f4", /* 258: foreground    (Text)     */\
+	"#1e1e2e", /* 259: background    (Base)     */\
+};' "$conf"
 
-    # Set default fg/bg to Catppuccin Mocha Base/Text
-    sed -i 's|^unsigned int defaultfg.*|unsigned int defaultfg = 257;|' "$conf"
-    sed -i 's|^unsigned int defaultbg.*|unsigned int defaultbg = 256;|'  "$conf"
-    sed -i 's|^static unsigned int defaultrcs.*|static unsigned int defaultrcs = 256;|' "$conf"
-    # Patch the special color entries (256 -> bg, 257 -> fg) at end of colorname[]
-    # In st's config.def.h, color 256 is the first color after [255] and color 257 is the second
-    sed -i '/\[255\]/{ n; s|".*"|"#1e1e2e"|; n; s|".*"|"#cdd6f4"|; }' "$conf"
+    # Point default fg/bg/cursor to the correct indices (unchanged from stock)
+    sed -i 's|^unsigned int defaultfg.*|unsigned int defaultfg = 258;|' "$conf"
+    sed -i 's|^unsigned int defaultbg.*|unsigned int defaultbg = 259;|' "$conf"
+    sed -i 's|^static unsigned int defaultrcs.*|static unsigned int defaultrcs = 257;|' "$conf"
+    sed -i 's|^unsigned int defaultcs.*|unsigned int defaultcs = 256;|' "$conf"
 
     make -C "$build_path" clean install
 
