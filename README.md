@@ -12,11 +12,12 @@ and audio bridged from the Termux host. No root required.
 ┌──────────────────────────────────────────────────┐
 │  Termux (native host)                            │
 │                                                  │
-│  termux-x11    ── X11 display server             │
-│  pulseaudio    ── audio (TCP bridge to Android)  │
-│  Mesa Zink     ── OpenGL → Vulkan translation    │
-│  Turnip        ── Adreno GPU driver              │
-│  proot-distro  ── container manager              │
+│  zsh          ── shell (zinit + oh-my-posh)      │
+│  termux-x11   ── X11 display server              │
+│  pulseaudio   ── audio (TCP bridge to Android)   │
+│  Mesa Zink    ── OpenGL → Vulkan translation     │
+│  Turnip       ── Adreno GPU driver               │
+│  proot-distro ── container manager               │
 │                                                  │
 │  ┌────────────────────────────────────────────┐  │
 │  │  Arch Linux (proot guest)                  │  │
@@ -81,12 +82,13 @@ curl). Safe to run multiple times.
 
 The installer will:
 1. Update Termux packages
-2. Install X11, GPU drivers, and PulseAudio
-3. Install proot-distro and set up Arch Linux
-4. Install Neovim, opencode, and dependencies inside Arch
-5. Build dwm, st, dmenu, and dwmblocks from source inside Arch
-6. Bootstrap Neovim plugins (lazy.nvim auto-sync)
-7. Symlink all dotfiles into the Arch home directory
+2. Set up Zsh with Oh My Posh, zinit plugins, and CLI tools
+3. Install X11, GPU drivers, and PulseAudio
+4. Install proot-distro and set up Arch Linux
+5. Install Neovim, opencode, and dependencies inside Arch
+6. Build dwm, st, dmenu, and dwmblocks from source inside Arch
+7. Bootstrap Neovim plugins (lazy.nvim auto-sync)
+8. Symlink all dotfiles into the Arch home directory
 
 Installation takes approximately 15-30 minutes depending on your internet
 connection.
@@ -137,7 +139,41 @@ Set your API key first (e.g., for Anthropic):
 export ANTHROPIC_API_KEY="your-key-here"
 ```
 
-Add it to your shell profile to persist across sessions.
+Add it to your `~/.zshrc` to persist across sessions.
+
+### Termux Shell
+
+The Termux host shell is **Zsh** with:
+
+- **Oh My Posh** prompt -- zen theme (Catppuccin Mocha colors)
+- **Zinit** plugin manager -- syntax highlighting, autosuggestions,
+  completions, fzf-tab
+- **zoxide** -- smart `cd` replacement (use `z` to jump to directories)
+- **fzf** -- fuzzy finder (Ctrl+R for history, Tab for completions)
+- **eza** -- modern `ls` with colors and icons
+- **bat** -- syntax-highlighted `cat`
+
+#### Shell Aliases
+
+| Alias | Command |
+|-------|---------|
+| `v` | `nvim` |
+| `oc` | `opencode` |
+| `ls` | `eza --color=always --icons=auto` |
+| `ll` | `eza -la --color=always --icons=auto` |
+| `lt` | `eza --tree --level=2` |
+| `cat` | `bat --plain` |
+| `z <dir>` | `zoxide` smart cd |
+| `..` / `...` / `....` | Navigate up directories |
+| `mkcd <dir>` | Create directory and cd into it |
+
+#### Shell Functions
+
+| Function | Description |
+|----------|-------------|
+| `f` | Fuzzy project picker -- select from `~/dev/` and cd into it |
+| `ff` | Fuzzy file finder -- search files in `~/dev/` and open in nvim |
+| `git-personal` / `gsp` | Set git user to personal account for current repo |
 
 ## Keybindings
 
@@ -219,6 +255,17 @@ termux-dotfiles/
 ├── stop-desktop.sh         Kill desktop session
 ├── config/
 │   └── gpu.sh              GPU environment variables
+├── termux/
+│   ├── setup-shell.sh      Shell installer (zsh, oh-my-posh, tools)
+│   ├── .zshrc              Zsh config (zinit + module loader)
+│   ├── zsh/
+│   │   ├── aliases.zsh     Shell aliases
+│   │   ├── completions.zsh Completion settings
+│   │   ├── functions.zsh   Shell functions (f, ff, git-personal)
+│   │   ├── history.zsh     History config
+│   │   └── tools.zsh       oh-my-posh + zoxide init
+│   └── ohmyposh/
+│       └── zen.toml        Prompt theme (Catppuccin Mocha)
 └── arch/
     ├── setup.sh            Arch guest setup (pacman, suckless builds)
     ├── home/
@@ -257,6 +304,7 @@ All tools use the **Catppuccin Mocha** color scheme with **Lavender**
 - `arch/home/.config/dunst/dunstrc` -- notification colors
 - `arch/home/.config/nvim/lua/plugins/catppuccin.lua` -- Neovim theme flavour
 - `arch/home/.xinitrc` -- root window background
+- `termux/ohmyposh/zen.toml` -- Termux prompt colors (palette section)
 
 ### Modifying suckless tools
 
