@@ -38,7 +38,7 @@ msg_error() {
 echo -e "${PURPLE}[1/5] Updating Arch packages...${NC}"
 echo ""
 
-pacman -Syu --noconfirm > /dev/null 2>&1
+pacman -Syu --noconfirm
 msg "System updated"
 
 # ============== STEP 2: INSTALL PACKAGES ==============
@@ -52,15 +52,13 @@ msg_start "Installing X11 and desktop dependencies..."
 pacman -S --needed --noconfirm \
     xorg-server xorg-xinit xorg-xrandr xorg-xsetroot \
     libx11 libxft libxinerama \
-    fontconfig freetype2 \
-    > /dev/null 2>&1
+    fontconfig freetype2
 msg "X11 dependencies installed"
 
 # Compositor + notifications
 msg_start "Installing picom and dunst..."
 pacman -S --needed --noconfirm \
-    picom dunst libnotify \
-    > /dev/null 2>&1
+    picom dunst libnotify
 msg "picom + dunst installed"
 
 # Applications
@@ -68,23 +66,27 @@ msg_start "Installing Firefox, ranger, and utilities..."
 pacman -S --needed --noconfirm \
     firefox ranger \
     feh xclip xdotool \
-    ttf-dejavu ttf-liberation noto-fonts \
-    > /dev/null 2>&1
+    ttf-dejavu ttf-liberation noto-fonts
 msg "Applications installed"
 
 # Build tools (needed for suckless compilation and telescope-fzf-native)
 msg_start "Installing build tools..."
 pacman -S --needed --noconfirm \
-    base-devel git \
-    > /dev/null 2>&1
+    base-devel git
 msg "Build tools installed"
 
 # Editor and AI coding tools
-msg_start "Installing Neovim, opencode, and dependencies..."
+msg_start "Installing Neovim and dependencies..."
 pacman -S --needed --noconfirm \
-    neovim ripgrep fd opencode \
-    > /dev/null 2>&1
-msg "Neovim + opencode installed"
+    neovim ripgrep fd
+msg "Neovim + dependencies installed"
+
+msg_start "Installing opencode (optional)..."
+if pacman -S --needed --noconfirm opencode; then
+    msg "opencode installed"
+else
+    msg_error "opencode package unavailable, continuing without it"
+fi
 
 # ============== STEP 3: BUILD SUCKLESS TOOLS ==============
 
@@ -108,11 +110,11 @@ build_suckless() {
     if [[ -d "$build_path" ]]; then
         rm -rf "$build_path"
     fi
-    git clone "$repo" "$build_path" > /dev/null 2>&1
+    git clone "$repo" "$build_path"
 
     # Checkout specific version if provided
     if [[ -n "$version" ]]; then
-        git -C "$build_path" checkout "$version" > /dev/null 2>&1
+        git -C "$build_path" checkout "$version"
     fi
 
     # Apply patches
@@ -132,7 +134,7 @@ build_suckless() {
     fi
 
     # Build and install
-    make -C "$build_path" clean install > /dev/null 2>&1
+    make -C "$build_path" clean install
 
     msg "Built and installed ${name}"
 }
@@ -150,8 +152,8 @@ build_st() {
     if [[ -d "$build_path" ]]; then
         rm -rf "$build_path"
     fi
-    git clone "https://git.suckless.org/st" "$build_path" > /dev/null 2>&1
-    git -C "$build_path" checkout "0.9.2" > /dev/null 2>&1
+    git clone "https://git.suckless.org/st" "$build_path"
+    git -C "$build_path" checkout "0.9.2"
 
     # Apply patches
     if [[ -d "${SUCKLESS_DIR}/st/patches" ]]; then
@@ -207,7 +209,7 @@ build_st() {
     # In st's config.def.h, color 256 is the first color after [255] and color 257 is the second
     sed -i '/\[255\]/{ n; s|".*"|"#1e1e2e"|; n; s|".*"|"#cdd6f4"|; }' "$conf"
 
-    make -C "$build_path" clean install > /dev/null 2>&1
+    make -C "$build_path" clean install
 
     msg "Built and installed st"
 }
@@ -265,7 +267,7 @@ echo ""
 
 # Run nvim headless to trigger lazy.nvim plugin installation
 msg_start "Installing Neovim plugins (this may take a moment)..."
-nvim --headless "+Lazy! sync" +qa > /dev/null 2>&1 || true
+nvim --headless "+Lazy! sync" +qa || true
 msg "Neovim plugins installed"
 
 echo ""
