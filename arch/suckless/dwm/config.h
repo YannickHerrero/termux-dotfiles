@@ -120,7 +120,7 @@ static const Key keys[] = {
 	{ MODKEY|ShiftMask,             XK_t,      setlayout,      {.v = &layouts[0]} },
 
 	/* close window */
-	{ MODKEY|ShiftMask,             XK_c,      killclient,     {0} },
+	{ MODKEY,                       XK_q,      killclient,     {0} },
 
 	/* toggle bar */
 	{ MODKEY|ShiftMask,             XK_b,      togglebar,      {0} },
