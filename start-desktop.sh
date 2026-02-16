@@ -15,6 +15,19 @@ YELLOW='\033[1;33m'
 WHITE='\033[1;37m'
 NC='\033[0m'
 
+# ============== PREREQUISITES ==============
+if ! command -v proot-distro > /dev/null 2>&1; then
+    echo -e "${YELLOW}Error:${NC} proot-distro is not installed."
+    echo "Run install.sh first, or: pkg install proot-distro"
+    exit 1
+fi
+
+if ! proot-distro list 2>/dev/null | grep -q "archlinux.*Installed"; then
+    echo -e "${YELLOW}Error:${NC} Arch Linux is not installed in proot-distro."
+    echo "Run install.sh first, or: proot-distro install archlinux"
+    exit 1
+fi
+
 # ============== CLEANUP ==============
 echo ""
 echo -e "${WHITE}Starting desktop session...${NC}"
@@ -36,7 +49,7 @@ pulseaudio --start --exit-idle-time=-1 2>/dev/null
 sleep 0.5
 if ! pactl list modules short 2>/dev/null | grep -q module-native-protocol-tcp; then
     pactl load-module module-native-protocol-tcp \
-        auth-ip-acl=127.0.0.1 auth-anonymous=1 2>/dev/null || true
+        auth-ip-acl=127.0.0.1 auth-anonymous=1 > /dev/null 2>&1 || true
 fi
 export PULSE_SERVER=127.0.0.1
 echo -e "  ${GREEN}✓${NC} Audio ready"
