@@ -18,6 +18,6 @@ index 5345196..3f91d2a 100644
 -void termhandler()
 +void termhandler(int signum)
  {
-	(void)signum;
++	(void)signum;
  	statusContinue = 0;
  }
