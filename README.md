@@ -64,6 +64,21 @@ cd termux-dotfiles
 bash install.sh
 ```
 
+### Migrating from termux-hacklab
+
+If you previously installed
+[termux-hacklab](https://github.com/jarvesusaram99/termux-hacklab), run
+the cleanup script first to remove its artifacts (XFCE4, security tools,
+Wine, desktop shortcuts, etc.):
+
+```bash
+bash cleanup.sh
+```
+
+This removes hacklab-only packages and files while **keeping** shared
+dependencies (x11-repo, termux-x11, pulseaudio, mesa drivers, git, wget,
+curl). Safe to run multiple times.
+
 The installer will:
 1. Update Termux packages
 2. Install X11, GPU drivers, and PulseAudio
@@ -199,6 +214,7 @@ Add it to your shell profile to persist across sessions.
 ```
 termux-dotfiles/
 ├── install.sh              Termux host setup (run once)
+├── cleanup.sh              Remove previous hacklab artifacts
 ├── start-desktop.sh        Start X11 + audio + dwm session
 ├── stop-desktop.sh         Kill desktop session
 ├── config/
