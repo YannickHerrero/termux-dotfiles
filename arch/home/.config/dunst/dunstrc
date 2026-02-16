@@ -1,0 +1,70 @@
+# dunst notification config - Termux mobile suckless desktop
+#
+# Gruvbox dark theme, minimal style, suitable for phone screens.
+
+[global]
+    # Display
+    monitor = 0
+    follow = mouse
+
+    # Geometry
+    width = 300
+    height = 100
+    origin = top-right
+    offset = 10x30
+
+    # Progress bar
+    progress_bar = true
+    progress_bar_height = 10
+
+    # Appearance
+    transparency = 0
+    separator_height = 2
+    padding = 10
+    horizontal_padding = 12
+    frame_width = 2
+    frame_color = "#d65d0e"
+    separator_color = frame
+    corner_radius = 0
+
+    # Text
+    font = DejaVu Sans Mono 10
+    line_height = 0
+    markup = full
+    format = "<b>%s</b>\n%b"
+    alignment = left
+    vertical_alignment = center
+    show_age_threshold = 60
+    ellipsize = middle
+    stack_duplicates = true
+    hide_duplicate_count = false
+    show_indicators = yes
+
+    # Behavior
+    idle_threshold = 120
+    sticky_history = yes
+    history_length = 20
+    sort = yes
+
+    # Mouse actions
+    mouse_left_click = close_current
+    mouse_middle_click = do_action, close_current
+    mouse_right_click = close_all
+
+[urgency_low]
+    background = "#282828"
+    foreground = "#ebdbb2"
+    frame_color = "#504945"
+    timeout = 5
+
+[urgency_normal]
+    background = "#282828"
+    foreground = "#ebdbb2"
+    frame_color = "#d65d0e"
+    timeout = 10
+
+[urgency_critical]
+    background = "#282828"
+    foreground = "#fb4934"
+    frame_color = "#cc241d"
+    timeout = 0
