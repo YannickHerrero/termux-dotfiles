@@ -170,6 +170,7 @@ The Termux host shell is **Zsh** with:
 | `Mod + b` | Open Firefox |
 | `Mod + Shift + c` | Close focused window |
 | `Mod + Shift + q` | Quit dwm |
+| `Mod + Ctrl + Shift + q` | Restart dwm in-place |
 
 ### Navigation
 
@@ -194,6 +195,25 @@ The Termux host shell is **Zsh** with:
 | `Mod + Shift + b` | Toggle status bar |
 | `Mod + i` | Add window to master area |
 | `Mod + d` | Remove window from master area |
+
+### Gaps
+
+| Keybinding | Action |
+|------------|--------|
+| `Mod + Shift + Alt + h` | Increase all gaps |
+| `Mod + Shift + Alt + l` | Decrease all gaps |
+| `Mod + Shift + Alt + 0` | Toggle gaps on/off |
+| `Mod + Shift + Alt + =` | Reset gaps to defaults |
+
+### st (terminal)
+
+| Keybinding | Action |
+|------------|--------|
+| `Shift + PgUp/PgDn` | Scroll up/down |
+| `Shift + Scroll` | Mouse wheel scrollback |
+| `Alt + [` | Decrease opacity |
+| `Alt + ]` | Reset opacity |
+| `Alt + Shift + }` | Increase opacity |
 
 ### Mouse
 
@@ -284,6 +304,38 @@ All tools use the **Catppuccin Mocha** color scheme with **Lavender**
 - `arch/home/.config/nvim/lua/plugins/catppuccin.lua` -- Neovim theme flavour
 - `arch/home/.xinitrc` -- root window background
 - `termux/starship/starship.toml` -- Termux prompt colors
+
+### Suckless Patches
+
+Patches are stored as `.diff` files in `arch/suckless/<tool>/patches/` and
+applied in filename order during the build (`arch/setup.sh`). All patches
+are tested against clean upstream sources.
+
+#### dwm 6.5 (7 patches)
+
+| # | Patch | Description |
+|---|-------|-------------|
+| 01 | push-updown | Move windows up/down in the stack (`Mod+Shift+j/k`) |
+| 02 | vanitygaps | Inner/outer gaps between windows (reduced for mobile) |
+| 03 | swallow | Terminal windows swallow spawned GUI apps (e.g. `mpv`) |
+| 04 | hide-vacant-tags | Only show tags that have windows |
+| 05 | restartsig | Restart dwm in-place (`Mod+Ctrl+Shift+q` or `kill -HUP`) |
+| 06 | colorbar | Per-element bar colors (tags, status, info area) |
+| 07 | statuscmd | Clickable status bar blocks (integrates with dwmblocks) |
+
+#### st 0.9.2 (6 features in 2 patches)
+
+| # | Patch | Features |
+|---|-------|----------|
+| 01 | ligatures-alpha-scrollback-ringbuffer | HarfBuzz ligatures, background transparency, keyboard scrollback (ring buffer) |
+| 02 | scrollback-mouse-changealpha-anysize | Mouse wheel scrollback, runtime alpha keybinds (`Alt+[/]`), any pixel size (no cell snapping) |
+
+#### dwmblocks (2 patches)
+
+| # | Patch | Description |
+|---|-------|-------------|
+| 01 | fix-termhandler-signature | Fix termhandler function signature for clean build |
+| 02 | statuscmd | Signal-based clickable blocks (button number via env) |
 
 ### Modifying suckless tools
 
