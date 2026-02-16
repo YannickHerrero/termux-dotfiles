@@ -153,6 +153,8 @@ build_suckless() {
     msg "Built and installed ${name}"
 }
 
+# Build st last — rebuilding st replaces the running terminal binary,
+# which can kill the session. Everything else should complete first.
 build_suckless "dwm"       "https://git.suckless.org/dwm"       "6.5"
 build_suckless "dmenu"     "https://git.suckless.org/dmenu"     "5.3"
 build_suckless "dwmblocks" "https://github.com/torrinfail/dwmblocks.git" ""
@@ -234,7 +236,10 @@ static const char *colorname[] = {\
     sed -i 's|^static unsigned int defaultrcs.*|static unsigned int defaultrcs = 257;|' "$conf"
     sed -i 's|^unsigned int defaultcs.*|unsigned int defaultcs = 256;|' "$conf"
 
-    make -C "$build_path" clean install
+    # Build in the temp dir, then install with cp to avoid `make install`
+    # doing rm + cp which can kill a running st session.
+    make -C "$build_path" clean st
+    cp -f "$build_path/st" /usr/local/bin/st
 
     msg "Built and installed st"
 }
