@@ -60,8 +60,8 @@ echo ""
 msg_start "Installing X11 and desktop dependencies..."
 pacman -S --needed --noconfirm \
     xorg-server xorg-xinit xorg-xrandr xorg-xsetroot \
-    libx11 libxft libxinerama \
-    fontconfig freetype2
+    libx11 libxft libxinerama libxrender \
+    fontconfig freetype2 harfbuzz
 msg "X11 dependencies installed"
 
 # Compositor + notifications
@@ -215,6 +215,9 @@ build_st() {
 
     # Disable bell
     sed -i 's|^static int bellvolume.*|static int bellvolume = 0;|' "$conf"
+
+    # Alpha (transparency — requires picom compositor)
+    sed -i 's|^float alpha.*|float alpha = 0.85;|' "$conf"
 
     # Catppuccin Mocha colors — replace the entire colorname array
     # Reference: https://github.com/catppuccin/st

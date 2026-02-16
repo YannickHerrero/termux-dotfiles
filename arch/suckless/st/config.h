@@ -5,11 +5,27 @@
  * because st's default key tables are ~200 lines of boilerplate that
  * change between versions.
  *
- * Customizations applied:
- *   - Font:       DejaVu Sans Mono, 16px
+ * Patches applied (in order):
+ *   01-ligatures-alpha-scrollback-ringbuffer.diff
+ *     - HarfBuzz ligature rendering (hb.c, hb.h)
+ *     - Background transparency (alpha = 0.8 default)
+ *     - Scrollback via keyboard (Shift+PgUp/PgDn)
+ *     - Ring buffer implementation for scrollback history
+ *
+ *   02-scrollback-mouse-changealpha-anysize.diff
+ *     - Mouse wheel scrollback (Shift+Scroll)
+ *     - Runtime alpha adjustment keybinds:
+ *         Alt+[  decrease opacity
+ *         Alt+]  reset opacity
+ *         Alt+Shift+}  increase opacity
+ *     - Any pixel size (no cell-size-snapping for tiling WMs)
+ *
+ * Customizations applied via sed:
+ *   - Font:       JetBrainsMono Nerd Font, 16px
  *   - Border:     2px
  *   - Tab width:  4 spaces
  *   - Bell:       disabled
+ *   - Alpha:      0.85 (85% opacity)
  *   - Colors:     Catppuccin Mocha (see below)
  *
  * Catppuccin Mocha palette:
