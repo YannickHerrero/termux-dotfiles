@@ -232,7 +232,13 @@ step_proot_arch() {
     echo -e "${PURPLE}[Step ${CURRENT_STEP}/${TOTAL_STEPS}] Installing proot-distro and Arch Linux...${NC}"
     echo ""
 
-    install_pkg "proot-distro" "proot-distro"
+    if ! install_pkg "proot-distro" "proot-distro"; then
+        echo -e "  ${YELLOW}!${NC} proot-distro install failed, attempting dependency repair"
+        run_cmd "Refreshing package lists..." pkg update -y
+        run_cmd "Repairing broken dependencies..." apt --fix-broken install -y
+        run_cmd "Upgrading packages after repair..." pkg upgrade -y
+        install_pkg "proot-distro" "proot-distro"
+    fi
 
     # Install Arch Linux if not already present
     if proot-distro list 2>/dev/null | grep -q "archlinux.*Installed"; then
