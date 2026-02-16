@@ -1,6 +1,6 @@
 /* dmenu config.h - Termux mobile suckless launcher
  *
- * Gruvbox color scheme, matches dwm and st.
+ * Catppuccin Mocha color scheme, matches dwm and st.
  * Bottom bar positioning works well on phone screens
  * since the keyboard appears at the bottom.
  */
@@ -15,12 +15,12 @@ static const char *fonts[] = {
 
 static const char *prompt = NULL; /* -p option; prompt to the left of input field */
 
-/* gruvbox colors */
+/* catppuccin mocha colors */
 static const char *colors[SchemeLast][2] = {
 	/*                  fg         bg       */
-	[SchemeNorm]    = { "#ebdbb2", "#282828" },
-	[SchemeSel]     = { "#282828", "#d65d0e" },
-	[SchemeOut]     = { "#000000", "#00ffff" },
+	[SchemeNorm]    = { "#cdd6f4", "#1e1e2e" },
+	[SchemeSel]     = { "#1e1e2e", "#b4befe" },
+	[SchemeOut]     = { "#1e1e2e", "#89b4fa" },
 };
 
 /* -l option; if nonzero, dmenu uses vertical list with given number of lines */

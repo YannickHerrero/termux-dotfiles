@@ -1,7 +1,7 @@
 /* dwm config.h - Termux mobile suckless desktop
  *
  * Optimized for phone screens and touch/keyboard use.
- * Monocle layout is default (best for small screens).
+ * Tiled layout by default (master left, stack right).
  */
 
 /* appearance */
@@ -12,12 +12,12 @@ static const int topbar             = 1;        /* 0 means bottom bar */
 static const char *fonts[]          = { "DejaVu Sans Mono:size=11" };
 static const char dmenufont[]       = "DejaVu Sans Mono:size=11";
 
-/* gruvbox-inspired color scheme */
-static const char col_bg[]          = "#282828";
-static const char col_fg[]          = "#ebdbb2";
-static const char col_border[]      = "#504945";
-static const char col_sel[]         = "#d65d0e";
-static const char col_sel_fg[]      = "#282828";
+/* catppuccin mocha color scheme */
+static const char col_bg[]          = "#1e1e2e";
+static const char col_fg[]          = "#cdd6f4";
+static const char col_border[]      = "#313244";
+static const char col_sel[]         = "#b4befe";
+static const char col_sel_fg[]      = "#1e1e2e";
 
 static const char *colors[][3]      = {
 	/*                fg         bg         border   */
@@ -41,8 +41,8 @@ static const int lockfullscreen = 1; /* 1 will force focus on the fullscreen win
 
 static const Layout layouts[] = {
 	/* symbol   arrange function */
-	{ "[M]",    monocle },  /* default: fullscreen, one window at a time */
-	{ "[]=",    tile },     /* tiled: master left, stack right */
+	{ "[]=",    tile },     /* default: tiled, master left, stack right */
+	{ "[M]",    monocle },  /* fullscreen, one window at a time */
 	{ "><>",    NULL },     /* floating: no layout, free placement */
 };
 
@@ -79,8 +79,8 @@ static const Key keys[] = {
 	{ MODKEY,                       XK_Return, zoom,           {0} },
 	{ MODKEY,                       XK_Tab,    view,           {0} },
 	{ MODKEY|ShiftMask,             XK_c,      killclient,     {0} },
-	{ MODKEY,                       XK_t,      setlayout,      {.v = &layouts[1]} }, /* tiled */
-	{ MODKEY,                       XK_m,      setlayout,      {.v = &layouts[0]} }, /* monocle */
+	{ MODKEY,                       XK_t,      setlayout,      {.v = &layouts[0]} }, /* tiled */
+	{ MODKEY,                       XK_m,      setlayout,      {.v = &layouts[1]} }, /* monocle */
 	{ MODKEY,                       XK_f,      setlayout,      {.v = &layouts[2]} }, /* floating */
 	{ MODKEY,                       XK_space,  setlayout,      {0} },
 	{ MODKEY|ShiftMask,             XK_space,  togglefloating, {0} },

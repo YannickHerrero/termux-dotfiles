@@ -13,7 +13,7 @@ dunst &
 dwmblocks &
 
 # Set wallpaper to solid color (or use feh for an image)
-xsetroot -solid "#282828"
+xsetroot -solid "#1e1e2e"
 
 # Uncomment to use a wallpaper image:
 # feh --bg-fill ~/.config/wallpaper.jpg &

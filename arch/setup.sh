@@ -172,25 +172,33 @@ build_st() {
     # Disable bell
     sed -i 's|^static int bellvolume.*|static int bellvolume = 0;|' "$conf"
 
-    # Gruvbox dark colors
+    # Catppuccin Mocha colors
     sed -i '/^static const char \*colorname/,/^};/{
-        s|"black"|"#282828"|
-        s|"red3"|"#cc241d"|
-        s|"green3"|"#98971a"|
-        s|"yellow3"|"#d79921"|
-        s|"blue2"|"#458588"|
-        s|"magenta3"|"#b16286"|
-        s|"cyan3"|"#689d6a"|
-        s|"gray90"|"#a89984"|
-        s|"gray50"|"#928374"|
-        s|"red"|"#fb4934"|
-        s|"green"|"#b8bb26"|
-        s|"yellow"|"#fabd2f"|
-        s|"\#4682b4"|"#83a598"|
-        s|"magenta"|"#d3869b"|
-        s|"cyan"|"#8ec07c"|
-        s|"white"|"#ebdbb2"|
+        s|"black"|"#45475a"|
+        s|"red3"|"#f38ba8"|
+        s|"green3"|"#a6e3a1"|
+        s|"yellow3"|"#f9e2af"|
+        s|"blue2"|"#89b4fa"|
+        s|"magenta3"|"#f5c2e7"|
+        s|"cyan3"|"#94e2d5"|
+        s|"gray90"|"#bac2de"|
+        s|"gray50"|"#585b70"|
+        s|"red"|"#f38ba8"|
+        s|"green"|"#a6e3a1"|
+        s|"yellow"|"#f9e2af"|
+        s|"\#4682b4"|"#89b4fa"|
+        s|"magenta"|"#f5c2e7"|
+        s|"cyan"|"#94e2d5"|
+        s|"white"|"#a6adc8"|
     }' "$conf"
+
+    # Set default fg/bg to Catppuccin Mocha Base/Text
+    sed -i 's|^unsigned int defaultfg.*|unsigned int defaultfg = 257;|' "$conf"
+    sed -i 's|^unsigned int defaultbg.*|unsigned int defaultbg = 256;|'  "$conf"
+    sed -i 's|^static unsigned int defaultrcs.*|static unsigned int defaultrcs = 256;|' "$conf"
+    # Patch the special color entries (256 -> bg, 257 -> fg) at end of colorname[]
+    # In st's config.def.h, color 256 is the first color after [255] and color 257 is the second
+    sed -i '/\[255\]/{ n; s|".*"|"#1e1e2e"|; n; s|".*"|"#cdd6f4"|; }' "$conf"
 
     make -C "$build_path" clean install > /dev/null 2>&1
 

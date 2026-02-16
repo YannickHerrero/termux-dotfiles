@@ -10,16 +10,26 @@
  *   - Border:     2px
  *   - Tab width:  4 spaces
  *   - Bell:       disabled
- *   - Colors:     gruvbox dark (see below)
+ *   - Colors:     Catppuccin Mocha (see below)
  *
- * Gruvbox dark palette:
- *   bg      = #282828     fg      = #ebdbb2
- *   black   = #282828     br.black  = #928374
- *   red     = #cc241d     br.red    = #fb4934
- *   green   = #98971a     br.green  = #b8bb26
- *   yellow  = #d79921     br.yellow = #fabd2f
- *   blue    = #458588     br.blue   = #83a598
- *   magenta = #b16286     br.magenta= #d3869b
- *   cyan    = #689d6a     br.cyan   = #8ec07c
- *   white   = #a89984     br.white  = #ebdbb2
+ * Catppuccin Mocha palette:
+ *   bg      = #1e1e2e (Base)       fg      = #cdd6f4 (Text)
+ *   cursor  = #f5e0dc (Rosewater)
+ *
+ *   [0]  = #45475a  Surface1    (black)
+ *   [1]  = #f38ba8  Red         (red)
+ *   [2]  = #a6e3a1  Green       (green)
+ *   [3]  = #f9e2af  Yellow      (yellow)
+ *   [4]  = #89b4fa  Blue        (blue)
+ *   [5]  = #f5c2e7  Pink        (magenta)
+ *   [6]  = #94e2d5  Teal        (cyan)
+ *   [7]  = #bac2de  Subtext1    (white)
+ *   [8]  = #585b70  Surface2    (bright black)
+ *   [9]  = #f38ba8  Red         (bright red)
+ *   [10] = #a6e3a1  Green       (bright green)
+ *   [11] = #f9e2af  Yellow      (bright yellow)
+ *   [12] = #89b4fa  Blue        (bright blue)
+ *   [13] = #f5c2e7  Pink        (bright magenta)
+ *   [14] = #94e2d5  Teal        (bright cyan)
+ *   [15] = #a6adc8  Subtext0    (bright white)
  */

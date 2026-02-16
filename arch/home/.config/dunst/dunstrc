@@ -1,6 +1,6 @@
 # dunst notification config - Termux mobile suckless desktop
 #
-# Gruvbox dark theme, minimal style, suitable for phone screens.
+# Catppuccin Mocha theme, minimal style, suitable for phone screens.
 
 [global]
     # Display
@@ -23,7 +23,7 @@
     padding = 10
     horizontal_padding = 12
     frame_width = 2
-    frame_color = "#d65d0e"
+    frame_color = "#b4befe"
     separator_color = frame
     corner_radius = 0
 
@@ -52,19 +52,19 @@
     mouse_right_click = close_all
 
 [urgency_low]
-    background = "#282828"
-    foreground = "#ebdbb2"
-    frame_color = "#504945"
+    background = "#1e1e2e"
+    foreground = "#cdd6f4"
+    frame_color = "#313244"
     timeout = 5
 
 [urgency_normal]
-    background = "#282828"
-    foreground = "#ebdbb2"
-    frame_color = "#d65d0e"
+    background = "#1e1e2e"
+    foreground = "#cdd6f4"
+    frame_color = "#b4befe"
     timeout = 10
 
 [urgency_critical]
-    background = "#282828"
-    foreground = "#fb4934"
-    frame_color = "#cc241d"
+    background = "#1e1e2e"
+    foreground = "#f38ba8"
+    frame_color = "#f38ba8"
     timeout = 0
