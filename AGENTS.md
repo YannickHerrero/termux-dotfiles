@@ -73,6 +73,10 @@ cp /root/.dotfiles/suckless/dwm/config.h .
 make clean install
 ```
 
+For `st`, patch first, then rely on `arch/setup.sh` sed customizations
+(`font`, `borderpx`, `tabspaces`, `bellvolume`, `alpha`, Catppuccin colors)
+instead of maintaining a full `config.h`.
+
 ### Linting
 
 ```bash
@@ -110,6 +114,25 @@ Use section banners: `# ============== SECTION NAME ==============`
 - Patches go in `<tool>/patches/` as `.diff` files, applied in filename order
 - Color scheme: **Catppuccin Mocha** across all tools (`#1e1e2e` bg, `#cdd6f4` fg,
   `#b4befe` Lavender accent)
+
+### Current Patch Sets (reference)
+
+- `dwm` (base: `6.5`):
+  `01-push-updown`, `02-vanitygaps`, `03-swallow`, `04-hide-vacant-tags`,
+  `05-restartsig`, `06-colorbar`, `07-statuscmd`
+- `st` (base: `0.9.2`):
+  `01-ligatures-alpha-scrollback-ringbuffer`,
+  `02-scrollback-mouse-changealpha-anysize`
+- `dwmblocks`:
+  `01-fix-termhandler-signature`, `02-statuscmd`
+
+### Patch Compatibility Rules
+
+- Always verify the **full chain** applies on a clean upstream checkout,
+  not just individual patches in isolation
+- If patch context breaks due to earlier patches, fix the `.diff` hunk context
+  and line counts (do not reorder unless intentionally redesigning the chain)
+- Keep numbering stable unless a deliberate migration is documented
 
 ### Naming Conventions
 
