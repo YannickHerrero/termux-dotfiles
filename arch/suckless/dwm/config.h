@@ -2,6 +2,19 @@
  *
  * Optimized for phone screens and touch/keyboard use.
  * Tiled layout by default (master left, stack right).
+ *
+ * Keybindings follow omarchy-style layout:
+ *   Alt+hjkl       focus windows
+ *   Alt+Shift+hjkl move/resize windows
+ *   Alt+Space      launcher (dmenu)
+ *   Alt+Enter      terminal (st)
+ *   Alt+b          browser (firefox)
+ *   Alt+f          toggle fullscreen (monocle)
+ *   Alt+t          toggle floating
+ *   Alt+1-9        switch workspace
+ *   Alt+Shift+1-9  move window to workspace and follow
+ *   Alt+Shift+c    close window
+ *   Alt+Shift+q    quit dwm
  */
 
 /* appearance */
@@ -25,8 +38,8 @@ static const char *colors[][3]      = {
 	[SchemeSel]   = { col_sel_fg,col_sel,   col_sel    },
 };
 
-/* tagging */
-static const char *tags[] = { "1", "2", "3", "4", "5" };
+/* tagging -- 9 workspaces */
+static const char *tags[] = { "1", "2", "3", "4", "5", "6", "7", "8", "9" };
 
 static const Rule rules[] = {
 	/* class      instance    title       tags mask  isfloating  monitor */
@@ -48,10 +61,12 @@ static const Layout layouts[] = {
 
 /* key definitions */
 #define MODKEY Mod1Mask  /* Alt key (Mod4/Super may not work on phone) */
+
+/* Alt+Shift+N: move window to tag N and follow focus there */
 #define TAGKEYS(KEY,TAG) \
 	{ MODKEY,                       KEY,      view,           {.ui = 1 << TAG} }, \
 	{ MODKEY|ControlMask,           KEY,      toggleview,     {.ui = 1 << TAG} }, \
-	{ MODKEY|ShiftMask,             KEY,      tag,            {.ui = 1 << TAG} }, \
+	{ MODKEY|ShiftMask,             KEY,      tagandview,     {.ui = 1 << TAG} }, \
 	{ MODKEY|ControlMask|ShiftMask, KEY,      toggletag,      {.ui = 1 << TAG} },
 
 /* helper for spawning shell commands */
@@ -64,33 +79,75 @@ static const char *dmenucmd[]  = { "dmenu_run", "-m", dmenumon, "-fn", dmenufont
 static const char *termcmd[]   = { "st", NULL };
 static const char *browsercmd[] = { "firefox", NULL };
 
+/* custom function: tag window and follow focus */
+static void tagandview(const Arg *arg) {
+	if (arg->ui & TAGMASK) {
+		tag(arg);
+		view(arg);
+	}
+}
+
 static const Key keys[] = {
 	/* modifier                     key        function        argument */
-	{ MODKEY,                       XK_p,      spawn,          {.v = dmenucmd } },
-	{ MODKEY|ShiftMask,             XK_Return, spawn,          {.v = termcmd } },
-	{ MODKEY,                       XK_w,      spawn,          {.v = browsercmd } },
-	{ MODKEY,                       XK_b,      togglebar,      {0} },
+
+	/* launchers */
+	{ MODKEY,                       XK_space,  spawn,          {.v = dmenucmd } },
+	{ MODKEY,                       XK_Return, spawn,          {.v = termcmd } },
+	{ MODKEY,                       XK_b,      spawn,          {.v = browsercmd } },
+
+	/* focus windows: Alt + hjkl */
+	{ MODKEY,                       XK_h,      focusstack,     {.i = -1 } },
 	{ MODKEY,                       XK_j,      focusstack,     {.i = +1 } },
 	{ MODKEY,                       XK_k,      focusstack,     {.i = -1 } },
-	{ MODKEY,                       XK_i,      incnmaster,     {.i = +1 } },
-	{ MODKEY,                       XK_d,      incnmaster,     {.i = -1 } },
-	{ MODKEY,                       XK_h,      setmfact,       {.f = -0.05} },
-	{ MODKEY,                       XK_l,      setmfact,       {.f = +0.05} },
-	{ MODKEY,                       XK_Return, zoom,           {0} },
-	{ MODKEY,                       XK_Tab,    view,           {0} },
+	{ MODKEY,                       XK_l,      focusstack,     {.i = +1 } },
+
+	/* move/resize windows: Alt + Shift + hjkl */
+	{ MODKEY|ShiftMask,             XK_h,      setmfact,       {.f = -0.05} },
+	{ MODKEY|ShiftMask,             XK_j,      pushdown,       {0} },
+	{ MODKEY|ShiftMask,             XK_k,      pushup,         {0} },
+	{ MODKEY|ShiftMask,             XK_l,      setmfact,       {.f = +0.05} },
+
+	/* promote focused window to master */
+	{ MODKEY|ShiftMask,             XK_Return, zoom,           {0} },
+
+	/* toggle fullscreen (monocle layout) */
+	{ MODKEY,                       XK_f,      setlayout,      {.v = &layouts[1]} },
+
+	/* toggle floating for focused window */
+	{ MODKEY,                       XK_t,      togglefloating, {0} },
+
+	/* back to tiled layout */
+	{ MODKEY|ShiftMask,             XK_t,      setlayout,      {.v = &layouts[0]} },
+
+	/* close window */
 	{ MODKEY|ShiftMask,             XK_c,      killclient,     {0} },
-	{ MODKEY,                       XK_t,      setlayout,      {.v = &layouts[0]} }, /* tiled */
-	{ MODKEY,                       XK_m,      setlayout,      {.v = &layouts[1]} }, /* monocle */
-	{ MODKEY,                       XK_f,      setlayout,      {.v = &layouts[2]} }, /* floating */
-	{ MODKEY,                       XK_space,  setlayout,      {0} },
-	{ MODKEY|ShiftMask,             XK_space,  togglefloating, {0} },
+
+	/* toggle bar */
+	{ MODKEY|ShiftMask,             XK_b,      togglebar,      {0} },
+
+	/* view all tags */
 	{ MODKEY,                       XK_0,      view,           {.ui = ~0 } },
 	{ MODKEY|ShiftMask,             XK_0,      tag,            {.ui = ~0 } },
+
+	/* switch between last two workspaces */
+	{ MODKEY,                       XK_Tab,    view,           {0} },
+
+	/* master area count */
+	{ MODKEY,                       XK_i,      incnmaster,     {.i = +1 } },
+	{ MODKEY,                       XK_d,      incnmaster,     {.i = -1 } },
+
+	/* workspaces 1-9 */
 	TAGKEYS(                        XK_1,                      0)
 	TAGKEYS(                        XK_2,                      1)
 	TAGKEYS(                        XK_3,                      2)
 	TAGKEYS(                        XK_4,                      3)
 	TAGKEYS(                        XK_5,                      4)
+	TAGKEYS(                        XK_6,                      5)
+	TAGKEYS(                        XK_7,                      6)
+	TAGKEYS(                        XK_8,                      7)
+	TAGKEYS(                        XK_9,                      8)
+
+	/* quit dwm */
 	{ MODKEY|ShiftMask,             XK_q,      quit,           {0} },
 };
 

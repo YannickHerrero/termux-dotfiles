@@ -180,9 +180,9 @@ The Termux host shell is **Zsh** with:
 
 | Keybinding | Action |
 |------------|--------|
-| `Mod + Shift + Enter` | Open terminal (st) |
-| `Mod + p` | Open application launcher (dmenu) |
-| `Mod + w` | Open Firefox |
+| `Mod + Enter` | Open terminal (st) |
+| `Mod + Space` | Open application launcher (dmenu) |
+| `Mod + b` | Open Firefox |
 | `Mod + Shift + c` | Close focused window |
 | `Mod + Shift + q` | Quit dwm |
 
@@ -190,25 +190,23 @@ The Termux host shell is **Zsh** with:
 
 | Keybinding | Action |
 |------------|--------|
-| `Mod + j` | Focus next window |
-| `Mod + k` | Focus previous window |
-| `Mod + Enter` | Promote focused window to master |
+| `Mod + h/j/k/l` | Focus windows |
+| `Mod + Shift + h/l` | Shrink/expand master area |
+| `Mod + Shift + j/k` | Move window down/up in stack |
+| `Mod + Shift + Enter` | Promote focused window to master |
 | `Mod + Tab` | Toggle between current and previous tag |
-| `Mod + 1-5` | Switch to tag 1-5 |
-| `Mod + Shift + 1-5` | Move focused window to tag 1-5 |
+| `Mod + 1-9` | Switch to workspace 1-9 |
+| `Mod + Shift + 1-9` | Move window to workspace and follow |
 | `Mod + 0` | View all tags |
 
 ### Layout
 
 | Keybinding | Action |
 |------------|--------|
-| `Mod + t` | Tiled layout (default) |
-| `Mod + m` | Monocle layout (fullscreen, one window) |
-| `Mod + f` | Floating layout |
-| `Mod + Space` | Toggle between current and previous layout |
-| `Mod + Shift + Space` | Toggle focused window floating |
-| `Mod + h` | Shrink master area |
-| `Mod + l` | Expand master area |
+| `Mod + f` | Toggle fullscreen (monocle) |
+| `Mod + t` | Toggle floating for focused window |
+| `Mod + Shift + t` | Back to tiled layout |
+| `Mod + Shift + b` | Toggle status bar |
 | `Mod + i` | Add window to master area |
 | `Mod + d` | Remove window from master area |
 
