@@ -11,29 +11,29 @@ and audio bridged from the Termux host. No root required.
 ```
 ┌──────────────────────────────────────────────────┐
 │  Termux (native host)                            │
-│                                                   │
-│  termux-x11    ── X11 display server              │
-│  pulseaudio    ── audio (TCP bridge to Android)   │
-│  Mesa Zink     ── OpenGL → Vulkan translation     │
-│  Turnip        ── Adreno GPU driver               │
-│  proot-distro  ── container manager               │
-│                                                   │
-│  ┌────────────────────────────────────────────┐   │
-│  │  Arch Linux (proot guest)                  │   │
-│  │                                             │   │
-│  │  dwm        ── tiling window manager        │   │
-│  │  st         ── terminal emulator            │   │
-│  │  dmenu      ── application launcher         │   │
-│  │  dwmblocks  ── status bar                   │   │
-│  │  picom      ── compositor                   │   │
-│  │  dunst      ── notifications                │   │
-│  │  neovim     ── editor (lazy.nvim plugins)    │   │
-│  │  opencode   ── AI coding assistant (TUI)    │   │
-│  │  firefox    ── browser                      │   │
-│  │  ranger     ── file manager                 │   │
-│  └────────────────────────────────────────────┘   │
-│                                                   │
-│  Termux-X11 Android app (display viewer)          │
+│                                                  │
+│  termux-x11    ── X11 display server             │
+│  pulseaudio    ── audio (TCP bridge to Android)  │
+│  Mesa Zink     ── OpenGL → Vulkan translation    │
+│  Turnip        ── Adreno GPU driver              │
+│  proot-distro  ── container manager              │
+│                                                  │
+│  ┌────────────────────────────────────────────┐  │
+│  │  Arch Linux (proot guest)                  │  │
+│  │                                            │  │
+│  │  dwm        ── tiling window manager       │  │
+│  │  st         ── terminal emulator           │  │
+│  │  dmenu      ── application launcher        │  │
+│  │  dwmblocks  ── status bar                  │  │
+│  │  picom      ── compositor                  │  │
+│  │  dunst      ── notifications               │  │
+│  │  neovim     ── editor (lazy.nvim plugins)  │  │
+│  │  opencode   ── AI coding assistant (TUI)   │  │
+│  │  firefox    ── browser                     │  │
+│  │  ranger     ── file manager                │  │
+│  └────────────────────────────────────────────┘  │
+│                                                  │
+│  Termux-X11 Android app (display viewer)         │
 └──────────────────────────────────────────────────┘
 ```
 
