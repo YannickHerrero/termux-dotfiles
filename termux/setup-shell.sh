@@ -6,7 +6,7 @@ set -euo pipefail
 #  Installs and configures zsh with:
 #    - Zinit plugin manager
 #    - Starship prompt (Catppuccin Mocha)
-#    - fzf, zoxide, eza, bat
+#    - zoxide, eza, bat
 #
 #  Called by install.sh (step_shell) or run standalone.
 #
@@ -69,7 +69,6 @@ install_packages() {
 
     install_pkg "zsh" "Zsh"
     install_pkg "starship" "Starship (prompt)"
-    install_pkg "fzf" "fzf (fuzzy finder)"
     install_pkg "zoxide" "zoxide (smart cd)"
     install_pkg "eza" "eza (modern ls)"
     install_pkg "bat" "bat (syntax-highlighted cat)"
@@ -84,7 +83,6 @@ verify_packages() {
     local failed=0
     verify_pkg "zsh" "Zsh"           || failed=1
     verify_pkg "starship" "Starship" || failed=1
-    verify_pkg "fzf" "fzf"          || failed=1
     verify_pkg "zoxide" "zoxide"     || failed=1
     verify_pkg "eza" "eza"           || failed=1
     verify_pkg "bat" "bat"           || failed=1

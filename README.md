@@ -147,9 +147,8 @@ The Termux host shell is **Zsh** with:
 
 - **Starship** prompt -- zen style (Catppuccin Mocha colors)
 - **Zinit** plugin manager -- syntax highlighting, autosuggestions,
-  completions, fzf-tab
+  completions
 - **zoxide** -- smart `cd` replacement (use `z` to jump to directories)
-- **fzf** -- fuzzy finder (Ctrl+R for history, Tab for completions)
 - **eza** -- modern `ls` with colors and icons
 - **bat** -- syntax-highlighted `cat`
 
@@ -171,8 +170,6 @@ The Termux host shell is **Zsh** with:
 
 | Function | Description |
 |----------|-------------|
-| `f` | Fuzzy project picker -- select from `~/dev/` and cd into it |
-| `ff` | Fuzzy file finder -- search files in `~/dev/` and open in nvim |
 | `git-personal` / `gsp` | Set git user to personal account for current repo |
 
 ## Keybindings
@@ -261,7 +258,7 @@ termux-dotfiles/
 │   ├── zsh/
 │   │   ├── aliases.zsh     Shell aliases
 │   │   ├── completions.zsh Completion settings
-│   │   ├── functions.zsh   Shell functions (f, ff, git-personal)
+│   │   ├── functions.zsh   Shell functions (git-personal)
 │   │   ├── history.zsh     History config
 │   │   └── tools.zsh       starship + zoxide init
 │   └── starship/
