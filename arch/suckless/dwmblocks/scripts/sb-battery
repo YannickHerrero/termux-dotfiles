@@ -1,0 +1,28 @@
+#!/bin/sh
+# Status bar: battery level
+# Works in Termux proot by reading from /sys (Android kernel exposes this)
+
+capacity_file="/sys/class/power_supply/battery/capacity"
+status_file="/sys/class/power_supply/battery/status"
+
+if [ -f "$capacity_file" ]; then
+    capacity=$(cat "$capacity_file")
+    status=$(cat "$status_file" 2>/dev/null || echo "Unknown")
+
+    icon=""
+    if [ "$status" = "Charging" ]; then
+        icon="CHG"
+    elif [ "$capacity" -ge 90 ]; then
+        icon="BAT"
+    elif [ "$capacity" -ge 50 ]; then
+        icon="BAT"
+    elif [ "$capacity" -ge 20 ]; then
+        icon="BAT"
+    else
+        icon="BAT!"
+    fi
+
+    printf "%s %s%%" "$icon" "$capacity"
+else
+    echo "BAT N/A"
+fi

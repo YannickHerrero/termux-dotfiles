@@ -1,0 +1,18 @@
+#!/bin/sh
+# Status bar: volume level
+# Uses pactl (PulseAudio) which connects to the Termux host via TCP.
+
+if command -v pactl > /dev/null 2>&1; then
+    vol=$(pactl get-sink-volume @DEFAULT_SINK@ 2>/dev/null | grep -oP '\d+%' | head -1)
+    mute=$(pactl get-sink-mute @DEFAULT_SINK@ 2>/dev/null | grep -o "yes")
+
+    if [ "$mute" = "yes" ]; then
+        echo "VOL MUTE"
+    elif [ -n "$vol" ]; then
+        echo "VOL $vol"
+    else
+        echo "VOL ?"
+    fi
+else
+    echo "VOL N/A"
+fi

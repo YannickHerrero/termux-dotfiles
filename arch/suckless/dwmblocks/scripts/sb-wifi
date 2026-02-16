@@ -1,0 +1,31 @@
+#!/bin/sh
+# Status bar: wifi/network status
+# In Termux proot, standard Linux tools (ip, iwconfig) may not work.
+# Fall back to checking basic connectivity.
+
+if command -v ip > /dev/null 2>&1; then
+    # Try to get wifi interface name and status
+    wifi_if=$(ip -o link show 2>/dev/null | grep -i "wlan" | awk -F': ' '{print $2}' | head -1)
+    if [ -n "$wifi_if" ]; then
+        state=$(ip -o link show "$wifi_if" 2>/dev/null | grep -o "state [A-Z]*" | awk '{print $2}')
+        if [ "$state" = "UP" ]; then
+            echo "NET UP"
+        else
+            echo "NET DOWN"
+        fi
+    else
+        # No wifi interface visible, check basic connectivity
+        if ping -c1 -W1 1.1.1.1 > /dev/null 2>&1; then
+            echo "NET OK"
+        else
+            echo "NET OFF"
+        fi
+    fi
+else
+    # Fallback: just check connectivity
+    if ping -c1 -W1 1.1.1.1 > /dev/null 2>&1; then
+        echo "NET OK"
+    else
+        echo "NET OFF"
+    fi
+fi
