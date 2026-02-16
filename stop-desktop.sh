@@ -11,9 +11,22 @@ set -euo pipefail
 
 echo "Stopping desktop session..."
 
+is_arch_installed() {
+    local rootfs_dir="${PREFIX:-/data/data/com.termux/files/usr}/var/lib/proot-distro/installed-rootfs/archlinux"
+
+    if ! command -v proot-distro > /dev/null 2>&1; then
+        return 1
+    fi
+
+    if proot-distro login archlinux -- true > /dev/null 2>&1; then
+        return 0
+    fi
+
+    [[ -d "$rootfs_dir" ]]
+}
+
 # Kill proot-internal desktop processes (only if proot-distro + Arch are available)
-if command -v proot-distro > /dev/null 2>&1 \
-    && proot-distro list 2>/dev/null | grep -q "archlinux.*Installed"; then
+if is_arch_installed; then
     proot-distro login archlinux -- pkill -9 dwm 2>/dev/null || true
     proot-distro login archlinux -- pkill -9 picom 2>/dev/null || true
     proot-distro login archlinux -- pkill -9 dunst 2>/dev/null || true

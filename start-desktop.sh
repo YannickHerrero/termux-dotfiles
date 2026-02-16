@@ -15,6 +15,21 @@ YELLOW='\033[1;33m'
 WHITE='\033[1;37m'
 NC='\033[0m'
 
+# ============== HELPERS ==============
+is_arch_installed() {
+    local rootfs_dir="${PREFIX:-/data/data/com.termux/files/usr}/var/lib/proot-distro/installed-rootfs/archlinux"
+
+    if ! command -v proot-distro > /dev/null 2>&1; then
+        return 1
+    fi
+
+    if proot-distro login archlinux -- true > /dev/null 2>&1; then
+        return 0
+    fi
+
+    [[ -d "$rootfs_dir" ]]
+}
+
 # ============== PREREQUISITES ==============
 if ! command -v proot-distro > /dev/null 2>&1; then
     echo -e "${YELLOW}Error:${NC} proot-distro is not installed."
@@ -22,7 +37,7 @@ if ! command -v proot-distro > /dev/null 2>&1; then
     exit 1
 fi
 
-if ! proot-distro list 2>/dev/null | grep -q "archlinux.*Installed"; then
+if ! is_arch_installed; then
     echo -e "${YELLOW}Error:${NC} Arch Linux is not installed in proot-distro."
     echo "Run install.sh first, or: proot-distro install archlinux"
     exit 1
