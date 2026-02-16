@@ -103,9 +103,9 @@ bootstrap_proot_distro() {
 
     echo -e "  ${YELLOW}→${NC} Bootstrapping proot-distro from upstream source"
 
+    run_cmd "Installing bootstrap prerequisites..." pkg install -y \
+        bash bzip2 coreutils curl file findutils grep gzip sed tar unzip util-linux xz-utils
     run_cmd "Installing proot runtime..." pkg install -y proot
-    run_cmd "Installing curl for bootstrap..." pkg install -y curl
-    run_cmd "Installing tar for bootstrap..." pkg install -y tar
 
     rm -rf "$tmp_dir"
     mkdir -p "$tmp_dir"
