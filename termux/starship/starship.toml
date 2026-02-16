@@ -1,0 +1,61 @@
+# Starship prompt — Zen style (Catppuccin Mocha palette)
+#
+# Minimal two-line prompt:
+#   ~/dev/project  main*  ⇣⇡           1.2s
+#   >
+#
+# Colors from Catppuccin Mocha:
+#   Lavender  #b4befe  (path)
+#   Overlay0  #6c7086  (git branch)
+#   Teal      #94e2d5  (git status)
+#   Peach     #fab387  (prompt char)
+#   Red       #f38ba8  (error)
+#   Yellow    #f9e2af  (duration)
+
+format = """
+$directory\
+$git_branch\
+$git_status\
+$fill\
+$cmd_duration\
+$line_break\
+$character"""
+
+# Don't add a blank line between prompts
+add_newline = false
+
+[directory]
+style = "#b4befe bold"
+truncation_length = 0
+truncate_to_repo = false
+format = "[$path]($style)"
+
+[git_branch]
+style = "#6c7086"
+format = " [$branch]($style)"
+
+[git_status]
+style = "#94e2d5"
+format = "[$all_status$ahead_behind]($style)"
+conflicted = "="
+ahead = "⇡"
+behind = "⇣"
+diverged = "⇡⇣"
+untracked = "*"
+stashed = ""
+modified = "*"
+staged = "*"
+renamed = ""
+deleted = ""
+
+[cmd_duration]
+style = "#f9e2af"
+min_time = 1_000
+format = "[$duration]($style)"
+
+[fill]
+symbol = " "
+
+[character]
+success_symbol = "[>](bold #fab387)"
+error_symbol = "[>](bold #f38ba8)"

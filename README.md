@@ -12,7 +12,7 @@ and audio bridged from the Termux host. No root required.
 ┌──────────────────────────────────────────────────┐
 │  Termux (native host)                            │
 │                                                  │
-│  zsh          ── shell (zinit + oh-my-posh)      │
+│  zsh          ── shell (zinit + starship)         │
 │  termux-x11   ── X11 display server              │
 │  pulseaudio   ── audio (TCP bridge to Android)   │
 │  Mesa Zink    ── OpenGL → Vulkan translation     │
@@ -82,7 +82,7 @@ curl). Safe to run multiple times.
 
 The installer will:
 1. Update Termux packages
-2. Set up Zsh with Oh My Posh, zinit plugins, and CLI tools
+2. Set up Zsh with Starship prompt, zinit plugins, and CLI tools
 3. Install X11, GPU drivers, and PulseAudio
 4. Install proot-distro and set up Arch Linux
 5. Install Neovim, opencode, and dependencies inside Arch
@@ -145,7 +145,7 @@ Add it to your `~/.zshrc` to persist across sessions.
 
 The Termux host shell is **Zsh** with:
 
-- **Oh My Posh** prompt -- zen theme (Catppuccin Mocha colors)
+- **Starship** prompt -- zen style (Catppuccin Mocha colors)
 - **Zinit** plugin manager -- syntax highlighting, autosuggestions,
   completions, fzf-tab
 - **zoxide** -- smart `cd` replacement (use `z` to jump to directories)
@@ -256,16 +256,16 @@ termux-dotfiles/
 ├── config/
 │   └── gpu.sh              GPU environment variables
 ├── termux/
-│   ├── setup-shell.sh      Shell installer (zsh, oh-my-posh, tools)
+│   ├── setup-shell.sh      Shell installer (zsh, starship, tools)
 │   ├── .zshrc              Zsh config (zinit + module loader)
 │   ├── zsh/
 │   │   ├── aliases.zsh     Shell aliases
 │   │   ├── completions.zsh Completion settings
 │   │   ├── functions.zsh   Shell functions (f, ff, git-personal)
 │   │   ├── history.zsh     History config
-│   │   └── tools.zsh       oh-my-posh + zoxide init
-│   └── ohmyposh/
-│       └── zen.toml        Prompt theme (Catppuccin Mocha)
+│   │   └── tools.zsh       starship + zoxide init
+│   └── starship/
+│       └── starship.toml   Prompt config (Catppuccin Mocha)
 └── arch/
     ├── setup.sh            Arch guest setup (pacman, suckless builds)
     ├── home/
@@ -304,7 +304,7 @@ All tools use the **Catppuccin Mocha** color scheme with **Lavender**
 - `arch/home/.config/dunst/dunstrc` -- notification colors
 - `arch/home/.config/nvim/lua/plugins/catppuccin.lua` -- Neovim theme flavour
 - `arch/home/.xinitrc` -- root window background
-- `termux/ohmyposh/zen.toml` -- Termux prompt colors (palette section)
+- `termux/starship/starship.toml` -- Termux prompt colors
 
 ### Modifying suckless tools
 

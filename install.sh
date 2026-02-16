@@ -306,7 +306,7 @@ main() {
     echo -e "${WHITE}  This will install a minimal tiling desktop on your phone:${NC}"
     echo -e "${GRAY}    dwm + st + dmenu + dwmblocks${NC}"
     echo -e "${GRAY}    Firefox, ranger, picom, dunst${NC}"
-    echo -e "${GRAY}    Zsh + Oh My Posh (Termux shell)${NC}"
+    echo -e "${GRAY}    Zsh + Starship prompt (Termux shell)${NC}"
     echo -e "${GRAY}    GPU acceleration via Mesa Zink/Turnip${NC}"
     echo ""
     echo -e "${YELLOW}  Press Enter to start, or Ctrl+C to cancel...${NC}"

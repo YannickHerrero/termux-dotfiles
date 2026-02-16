@@ -5,7 +5,7 @@ set -euo pipefail
 #
 #  Installs and configures zsh with:
 #    - Zinit plugin manager
-#    - Oh My Posh prompt (zen theme, Catppuccin Mocha)
+#    - Starship prompt (Catppuccin Mocha)
 #    - fzf, zoxide, eza, bat
 #
 #  Called by install.sh (step_shell) or run standalone.
@@ -38,32 +38,17 @@ install_pkg() {
     fi
 }
 
-# ============== INSTALL PACKAGES ==============
+# Verify a binary is available after install
+verify_pkg() {
+    local binary=$1
+    local name=${2:-$binary}
 
-install_packages() {
-    echo -e "  ${YELLOW}⏳${NC} Installing shell packages..."
-
-    install_pkg "zsh" "Zsh"
-    install_pkg "fzf" "fzf (fuzzy finder)"
-    install_pkg "zoxide" "zoxide (smart cd)"
-    install_pkg "eza" "eza (modern ls)"
-    install_pkg "bat" "bat (syntax-highlighted cat)"
-    install_pkg "git" "git"
-}
-
-# ============== INSTALL OH MY POSH ==============
-
-install_oh_my_posh() {
-    if command -v oh-my-posh > /dev/null 2>&1; then
-        echo -e "  ${GRAY}-${NC} Oh My Posh already installed"
-    else
-        echo -e "  ${YELLOW}⏳${NC} Installing Oh My Posh..."
-        curl -s https://ohmyposh.dev/install.sh | bash -s > /dev/null 2>&1
-        echo -e "  ${GREEN}✓${NC} Installed Oh My Posh"
+    if ! command -v "$binary" > /dev/null 2>&1; then
+        echo -e "  ${RED}✗${NC} ${name} binary not found after install"
+        echo -e "    Try manually: ${YELLOW}pkg install ${binary}${NC}"
+        return 1
     fi
 }
-
-# ============== COPY CONFIGS ==============
 
 # Copy a config file, backing up the destination if it differs
 safe_copy() {
@@ -76,6 +61,45 @@ safe_copy() {
     fi
     cp "$src" "$dest"
 }
+
+# ============== INSTALL PACKAGES ==============
+
+install_packages() {
+    echo -e "  ${YELLOW}⏳${NC} Installing shell packages..."
+
+    install_pkg "zsh" "Zsh"
+    install_pkg "starship" "Starship (prompt)"
+    install_pkg "fzf" "fzf (fuzzy finder)"
+    install_pkg "zoxide" "zoxide (smart cd)"
+    install_pkg "eza" "eza (modern ls)"
+    install_pkg "bat" "bat (syntax-highlighted cat)"
+    install_pkg "git" "git"
+}
+
+# ============== VERIFY PACKAGES ==============
+
+verify_packages() {
+    echo -e "  ${YELLOW}⏳${NC} Verifying installed packages..."
+
+    local failed=0
+    verify_pkg "zsh" "Zsh"           || failed=1
+    verify_pkg "starship" "Starship" || failed=1
+    verify_pkg "fzf" "fzf"          || failed=1
+    verify_pkg "zoxide" "zoxide"     || failed=1
+    verify_pkg "eza" "eza"           || failed=1
+    verify_pkg "bat" "bat"           || failed=1
+    verify_pkg "git" "git"           || failed=1
+
+    if [[ $failed -eq 1 ]]; then
+        echo -e "  ${RED}✗${NC} Some packages failed to install"
+        echo -e "    Run ${YELLOW}pkg update && pkg upgrade${NC} then try again"
+        return 1
+    fi
+
+    echo -e "  ${GREEN}✓${NC} All packages verified"
+}
+
+# ============== COPY CONFIGS ==============
 
 copy_configs() {
     echo -e "  ${YELLOW}⏳${NC} Copying shell configuration..."
@@ -90,10 +114,10 @@ copy_configs() {
     done
     echo -e "  ${GREEN}✓${NC} Copied ~/.zsh/ modules"
 
-    # Oh My Posh theme
-    mkdir -p ~/.config/ohmyposh
-    safe_copy "${SCRIPT_DIR}/ohmyposh/zen.toml" ~/.config/ohmyposh/zen.toml
-    echo -e "  ${GREEN}✓${NC} Copied ~/.config/ohmyposh/zen.toml"
+    # Starship config
+    mkdir -p ~/.config
+    safe_copy "${SCRIPT_DIR}/starship/starship.toml" ~/.config/starship.toml
+    echo -e "  ${GREEN}✓${NC} Copied ~/.config/starship.toml"
 }
 
 # ============== SET DEFAULT SHELL ==============
@@ -111,7 +135,7 @@ set_default_shell() {
 
 main() {
     install_packages
-    install_oh_my_posh
+    verify_packages
     copy_configs
     set_default_shell
 
