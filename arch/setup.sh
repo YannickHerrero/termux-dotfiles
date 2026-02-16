@@ -108,21 +108,10 @@ msg_start "Installing opencode (optional)..."
 if command -v opencode > /dev/null 2>&1; then
     msg "opencode already installed"
 else
-    ARCH=$(uname -m)
-    case "$ARCH" in
-        aarch64) OC_ARCH="arm64" ;;
-        x86_64)  OC_ARCH="amd64" ;;
-        *)       OC_ARCH="$ARCH" ;;
-    esac
-    OC_URL=$(curl -fsSL https://api.github.com/repos/opencode-ai/opencode/releases/latest \
-        | grep "browser_download_url.*linux-${OC_ARCH}.tar.gz" \
-        | cut -d '"' -f 4)
-    if [[ -n "$OC_URL" ]]; then
-        curl -fsSL "$OC_URL" | tar xz -C /usr/local/bin opencode
-        chmod +x /usr/local/bin/opencode
-        msg "opencode installed from GitHub releases"
+    if curl -fsSL https://opencode.ai/install | bash; then
+        msg "opencode installed"
     else
-        msg_error "opencode: no release found for ${ARCH}, skipping"
+        msg_error "opencode install failed, skipping"
     fi
 fi
 
