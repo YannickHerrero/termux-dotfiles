@@ -21,14 +21,13 @@ diff --git a/config.def.h b/config.def.h
 diff --git a/dwm.c b/dwm.c
 --- a/dwm.c
 +++ b/dwm.c
-@@ -207,6 +207,8 @@ static void seturgent(Client *c, int urg);
+@@ -207,5 +207,7 @@ static void seturgent(Client *c, int urg);
  static void showhide(Client *c);
  static void spawn(const Arg *arg);
  static void tag(const Arg *arg);
 +static void sighup(int unused);
 +static void sigterm(int unused);
  static void tagmon(const Arg *arg);
- static void tile(Monitor *m);
  static void togglebar(const Arg *arg);
 @@ -261,6 +263,7 @@ static void (*handler[LASTEvent]) (XEvent *) = {
  };

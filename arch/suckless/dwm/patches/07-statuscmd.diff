@@ -54,13 +54,15 @@ index 53b393e..dbaef27 100644
  static int gettextprop(Window w, Atom atom, char *text, unsigned int size);
  static void grabbuttons(Client *c, int focused);
  static void grabkeys(void);
-@@ -204,6 +205,7 @@ static void setmfact(const Arg *arg);
+@@ -204,8 +205,9 @@ static void setmfact(const Arg *arg);
  static void setup(void);
  static void seturgent(Client *c, int urg);
  static void showhide(Client *c);
 +static void sigstatusbar(const Arg *arg);
  static void spawn(const Arg *arg);
  static void tag(const Arg *arg);
+ static void sighup(int unused);
+ static void sigterm(int unused);
  static void tagmon(const Arg *arg);
 @@ -236,6 +238,9 @@ static void zoom(const Arg *arg);
  /* variables */
