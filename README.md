@@ -60,7 +60,7 @@ Audio: `App → PULSE_SERVER=127.0.0.1 → PulseAudio (Termux) → Android`
 Open Termux and run:
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/termux-dotfiles.git
+git clone https://github.com/YannickHerrero/termux-dotfiles.git
 cd termux-dotfiles
 bash install.sh
 ```
