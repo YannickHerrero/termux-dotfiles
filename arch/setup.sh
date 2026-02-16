@@ -67,7 +67,7 @@ pacman -S --needed --noconfirm \
     firefox ranger \
     feh xclip xdotool \
     fastfetch btop \
-    ttf-dejavu ttf-liberation noto-fonts
+    ttf-jetbrains-mono-nerd ttf-dejavu ttf-liberation noto-fonts
 msg "Applications installed"
 
 # Build tools (needed for suckless compilation and telescope-fzf-native)
@@ -186,7 +186,7 @@ build_st() {
     local conf="${build_path}/config.def.h"
 
     # Font
-    sed -i 's|^static char \*font = .*|static char *font = "DejaVu Sans Mono:pixelsize=16:antialias=true:autohint=true";|' "$conf"
+    sed -i 's|^static char \*font = .*|static char *font = "JetBrainsMono Nerd Font:pixelsize=16:antialias=true:autohint=true";|' "$conf"
 
     # Border
     sed -i 's|^static int borderpx.*|static int borderpx = 2;|' "$conf"
