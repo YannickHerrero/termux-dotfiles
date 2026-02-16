@@ -2,9 +2,6 @@
   st = status
   ck = checkout
   lo = log
-[user]
-  name = YannickHerrero
-  email = yannick.herrero@proton.me
 [core]
   editor = nvim
   autocrlf = input

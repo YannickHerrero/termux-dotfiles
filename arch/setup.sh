@@ -292,7 +292,7 @@ if [[ -d "$HOME_SRC" ]]; then
         msg "Linked .zshrc"
     fi
 
-    # .gitconfig
+    # .gitconfig (aliases, merge, diff settings — no personal info)
     if [[ -f "${HOME_SRC}/.gitconfig" ]]; then
         ln -sf "${HOME_SRC}/.gitconfig" ~/.gitconfig
         msg "Linked .gitconfig"
@@ -302,6 +302,19 @@ if [[ -d "$HOME_SRC" ]]; then
     if [[ -f "${HOME_SRC}/.gitconfig-delta" ]]; then
         ln -sf "${HOME_SRC}/.gitconfig-delta" ~/.gitconfig-delta
         msg "Linked .gitconfig-delta"
+    fi
+
+    # Git user identity (interactive, skip if already configured)
+    if git config --global user.name > /dev/null 2>&1; then
+        msg "Git user already configured ($(git config --global user.name))"
+    else
+        echo ""
+        echo -e "  ${YELLOW}Git needs your identity for commits:${NC}"
+        read -rp "    Name:  " git_name
+        read -rp "    Email: " git_email
+        git config --global user.name "$git_name"
+        git config --global user.email "$git_email"
+        msg "Git user configured: ${git_name} <${git_email}>"
     fi
 
     # .zsh/ directory (individual module files)
