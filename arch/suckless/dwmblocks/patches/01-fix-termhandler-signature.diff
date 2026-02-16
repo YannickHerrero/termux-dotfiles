@@ -1,0 +1,23 @@
+diff --git a/dwmblocks.c b/dwmblocks.c
+index 5345196..3f91d2a 100644
+--- a/dwmblocks.c
++++ b/dwmblocks.c
+@@ -32,7 +32,7 @@ void setupsignals();
+ void sighandler(int signum);
+ int getstatus(char *str, char *last);
+ void statusloop();
+-void termhandler();
++void termhandler(int signum);
+ void pstdout();
+ #ifndef NO_X
+ void setroot();
+@@ -185,7 +185,8 @@ void sighandler(int signum)
+ 	writestatus();
+ }
+ 
+-void termhandler()
++void termhandler(int signum)
+ {
+	(void)signum;
+ 	statusContinue = 0;
+ }
