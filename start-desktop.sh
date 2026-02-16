@@ -34,8 +34,10 @@ unset PULSE_SERVER
 echo -e "  ${YELLOW}⏳${NC} Starting audio server..."
 pulseaudio --start --exit-idle-time=-1 2>/dev/null
 sleep 0.5
-pactl load-module module-native-protocol-tcp \
-    auth-ip-acl=127.0.0.1 auth-anonymous=1 2>/dev/null || true
+if ! pactl list modules short 2>/dev/null | grep -q module-native-protocol-tcp; then
+    pactl load-module module-native-protocol-tcp \
+        auth-ip-acl=127.0.0.1 auth-anonymous=1 2>/dev/null || true
+fi
 export PULSE_SERVER=127.0.0.1
 echo -e "  ${GREEN}✓${NC} Audio ready"
 

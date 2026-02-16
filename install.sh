@@ -56,6 +56,7 @@ spinner() {
     local message=$2
     local spin='⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏'
     local i=0
+    local exit_code=0
 
     while kill -0 "$pid" 2>/dev/null; do
         i=$(((i + 1) % 10))
@@ -63,8 +64,7 @@ spinner() {
         sleep 0.1
     done
 
-    wait "$pid" || true
-    local exit_code=$?
+    wait "$pid" 2>/dev/null || exit_code=$?
 
     if [[ $exit_code -eq 0 ]]; then
         printf "\r  ${GREEN}✓${NC} %s                    \n" "$message"
@@ -79,6 +79,18 @@ install_pkg() {
 
     (pkg install -y "$pkg" > /dev/null 2>&1) &
     spinner $! "Installing ${name}..."
+}
+
+# Copy a config file, backing up the destination if it differs
+safe_copy() {
+    local src=$1
+    local dest=$2
+
+    if [[ -f "$dest" ]] && ! diff -q "$src" "$dest" > /dev/null 2>&1; then
+        cp "$dest" "${dest}.bak"
+        echo -e "  ${YELLOW}!${NC} Backed up ${dest} -> ${dest}.bak"
+    fi
+    cp "$src" "$dest"
 }
 
 show_banner() {
@@ -195,7 +207,7 @@ step_gpu() {
     # GPU config is sourced from ~/.zshrc (installed by step_shell)
     # Also keep a bashrc fallback for non-interactive sessions
     mkdir -p ~/.config
-    cp "${DOTFILES_DIR}/config/gpu.sh" ~/.config/gpu.sh
+    safe_copy "${DOTFILES_DIR}/config/gpu.sh" ~/.config/gpu.sh
     if ! grep -q "config/gpu.sh" ~/.bashrc 2>/dev/null; then
         echo 'source ~/.config/gpu.sh 2>/dev/null' >> ~/.bashrc
     fi
@@ -254,11 +266,11 @@ install_launchers() {
     echo -e "${PURPLE}[*] Installing launcher scripts...${NC}"
     echo ""
 
-    cp "${DOTFILES_DIR}/start-desktop.sh" ~/start-desktop.sh
+    safe_copy "${DOTFILES_DIR}/start-desktop.sh" ~/start-desktop.sh
     chmod +x ~/start-desktop.sh
     echo -e "  ${GREEN}✓${NC} ~/start-desktop.sh installed"
 
-    cp "${DOTFILES_DIR}/stop-desktop.sh" ~/stop-desktop.sh
+    safe_copy "${DOTFILES_DIR}/stop-desktop.sh" ~/stop-desktop.sh
     chmod +x ~/stop-desktop.sh
     echo -e "  ${GREEN}✓${NC} ~/stop-desktop.sh installed"
 }

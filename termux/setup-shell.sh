@@ -65,27 +65,35 @@ install_oh_my_posh() {
 
 # ============== COPY CONFIGS ==============
 
+# Copy a config file, backing up the destination if it differs
+safe_copy() {
+    local src=$1
+    local dest=$2
+
+    if [[ -f "$dest" ]] && ! diff -q "$src" "$dest" > /dev/null 2>&1; then
+        cp "$dest" "${dest}.bak"
+        echo -e "  ${YELLOW}!${NC} Backed up ${dest} -> ${dest}.bak"
+    fi
+    cp "$src" "$dest"
+}
+
 copy_configs() {
     echo -e "  ${YELLOW}⏳${NC} Copying shell configuration..."
 
     # Zsh config
-    cp "${SCRIPT_DIR}/.zshrc" ~/.zshrc
+    safe_copy "${SCRIPT_DIR}/.zshrc" ~/.zshrc
     echo -e "  ${GREEN}✓${NC} Copied ~/.zshrc"
 
     mkdir -p ~/.zsh
-    cp "${SCRIPT_DIR}/zsh/"*.zsh ~/.zsh/
+    for f in "${SCRIPT_DIR}/zsh/"*.zsh; do
+        safe_copy "$f" ~/.zsh/"$(basename "$f")"
+    done
     echo -e "  ${GREEN}✓${NC} Copied ~/.zsh/ modules"
 
     # Oh My Posh theme
     mkdir -p ~/.config/ohmyposh
-    cp "${SCRIPT_DIR}/ohmyposh/zen.toml" ~/.config/ohmyposh/zen.toml
+    safe_copy "${SCRIPT_DIR}/ohmyposh/zen.toml" ~/.config/ohmyposh/zen.toml
     echo -e "  ${GREEN}✓${NC} Copied ~/.config/ohmyposh/zen.toml"
-
-    # GPU env vars sourced from .zshrc (installed by step_gpu)
-    if [[ -f "${DOTFILES_DIR}/config/gpu.sh" ]]; then
-        mkdir -p ~/.config
-        cp "${DOTFILES_DIR}/config/gpu.sh" ~/.config/gpu.sh
-    fi
 }
 
 # ============== SET DEFAULT SHELL ==============
