@@ -33,7 +33,7 @@ install_pkg() {
     if dpkg -s "$pkg" > /dev/null 2>&1; then
         echo -e "  ${GRAY}-${NC} ${name} already installed"
     else
-        (yes | pkg install "$pkg" -y > /dev/null 2>&1) || true
+        pkg install -y "$pkg" > /dev/null 2>&1 || true
         echo -e "  ${GREEN}✓${NC} Installed ${name}"
     fi
 }

@@ -63,7 +63,7 @@ spinner() {
         sleep 0.1
     done
 
-    wait "$pid"
+    wait "$pid" || true
     local exit_code=$?
 
     if [[ $exit_code -eq 0 ]]; then
@@ -71,15 +71,13 @@ spinner() {
     else
         printf "\r  ${RED}✗${NC} %s ${RED}(failed)${NC}     \n" "$message"
     fi
-
-    return "$exit_code"
 }
 
 install_pkg() {
     local pkg=$1
     local name=${2:-$pkg}
 
-    (yes | pkg install "$pkg" -y > /dev/null 2>&1) &
+    (pkg install -y "$pkg" > /dev/null 2>&1) &
     spinner $! "Installing ${name}..."
 }
 
@@ -138,10 +136,10 @@ step_update() {
     echo -e "${PURPLE}[Step ${CURRENT_STEP}/${TOTAL_STEPS}] Updating system packages...${NC}"
     echo ""
 
-    (yes | pkg update -y > /dev/null 2>&1) &
+    (pkg update -y > /dev/null 2>&1 || true) &
     spinner $! "Updating package lists..."
 
-    (yes | pkg upgrade -y > /dev/null 2>&1) &
+    (pkg upgrade -y > /dev/null 2>&1 || true) &
     spinner $! "Upgrading installed packages..."
 }
 

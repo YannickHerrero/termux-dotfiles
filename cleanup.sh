@@ -217,7 +217,7 @@ step_uninstall_packages() {
     local removed=0
     for pkg in "${hacklab_pkgs[@]}"; do
         if dpkg -s "$pkg" > /dev/null 2>&1; then
-            (yes | pkg uninstall "$pkg" -y > /dev/null 2>&1) || true
+            pkg uninstall -y "$pkg" > /dev/null 2>&1 || true
             echo -e "  ${GREEN}✓${NC} Uninstalled ${pkg}"
             removed=$((removed + 1))
         fi
@@ -238,7 +238,7 @@ step_remove_tur_repo() {
     echo ""
 
     if dpkg -s tur-repo > /dev/null 2>&1; then
-        (yes | pkg uninstall tur-repo -y > /dev/null 2>&1) || true
+        pkg uninstall -y tur-repo > /dev/null 2>&1 || true
         echo -e "  ${GREEN}✓${NC} Uninstalled tur-repo"
     else
         echo -e "  ${GRAY}-${NC} tur-repo not installed (skipped)"
@@ -265,7 +265,7 @@ step_final_cleanup() {
     fi
 
     # Autoremove orphaned dependencies
-    (yes | pkg autoclean > /dev/null 2>&1) || true
+    pkg autoclean > /dev/null 2>&1 || true
     echo -e "  ${GREEN}✓${NC} Package cache cleaned"
 
     (apt autoremove -y > /dev/null 2>&1) || true
