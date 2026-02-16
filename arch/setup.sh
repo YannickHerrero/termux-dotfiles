@@ -35,7 +35,7 @@ msg_error() {
 
 # ============== STEP 1: SYSTEM UPDATE ==============
 
-echo -e "${PURPLE}[1/4] Updating Arch packages...${NC}"
+echo -e "${PURPLE}[1/5] Updating Arch packages...${NC}"
 echo ""
 
 pacman -Syu --noconfirm > /dev/null 2>&1
@@ -44,7 +44,7 @@ msg "System updated"
 # ============== STEP 2: INSTALL PACKAGES ==============
 
 echo ""
-echo -e "${PURPLE}[2/4] Installing packages...${NC}"
+echo -e "${PURPLE}[2/5] Installing packages...${NC}"
 echo ""
 
 # Core X11 / desktop dependencies
@@ -72,17 +72,24 @@ pacman -S --needed --noconfirm \
     > /dev/null 2>&1
 msg "Applications installed"
 
-# Build tools (needed for suckless compilation)
+# Build tools (needed for suckless compilation and telescope-fzf-native)
 msg_start "Installing build tools..."
 pacman -S --needed --noconfirm \
     base-devel git \
     > /dev/null 2>&1
 msg "Build tools installed"
 
+# Editor and AI coding tools
+msg_start "Installing Neovim, opencode, and dependencies..."
+pacman -S --needed --noconfirm \
+    neovim ripgrep fd opencode \
+    > /dev/null 2>&1
+msg "Neovim + opencode installed"
+
 # ============== STEP 3: BUILD SUCKLESS TOOLS ==============
 
 echo ""
-echo -e "${PURPLE}[3/4] Building suckless tools...${NC}"
+echo -e "${PURPLE}[3/5] Building suckless tools...${NC}"
 echo ""
 
 SUCKLESS_DIR="${DOTFILES_DIR}/suckless"
@@ -213,7 +220,7 @@ rm -rf "$BUILD_DIR"
 # ============== STEP 4: SYMLINK DOTFILES ==============
 
 echo ""
-echo -e "${PURPLE}[4/4] Linking dotfiles...${NC}"
+echo -e "${PURPLE}[4/5] Linking dotfiles...${NC}"
 echo ""
 
 HOME_SRC="${DOTFILES_DIR}/home"
@@ -249,6 +256,17 @@ if [[ -d "${SUCKLESS_DIR}/dwmblocks/scripts" ]]; then
     done
     msg "Linked dwmblocks scripts"
 fi
+
+# ============== STEP 5: NEOVIM PLUGIN BOOTSTRAP ==============
+
+echo ""
+echo -e "${PURPLE}[5/5] Bootstrapping Neovim plugins...${NC}"
+echo ""
+
+# Run nvim headless to trigger lazy.nvim plugin installation
+msg_start "Installing Neovim plugins (this may take a moment)..."
+nvim --headless "+Lazy! sync" +qa > /dev/null 2>&1 || true
+msg "Neovim plugins installed"
 
 echo ""
 msg "Arch Linux setup complete"
