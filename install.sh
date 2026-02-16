@@ -10,13 +10,19 @@ set -euo pipefail
 #    - proot-distro with Arch Linux
 #    - Launches Arch setup script
 #
-#  Usage: bash install.sh
+#  Usage:
+#    bash install.sh              # Full install (all steps)
+#    bash install.sh --build-only # Rebuild suckless tools + relink dotfiles
 #######################################################
 
 # ============== CONFIGURATION ==============
 TOTAL_STEPS=7
 CURRENT_STEP=0
 DOTFILES_DIR="$(cd "$(dirname "$0")" && pwd)"
+BUILD_ONLY=false
+if [[ "${1:-}" == "--build-only" ]]; then
+    BUILD_ONLY=true
+fi
 
 # ============== COLORS ==============
 RED='\033[0;31m'
@@ -386,6 +392,42 @@ show_completion() {
 # ============== MAIN ==============
 
 main() {
+    if [[ "$BUILD_ONLY" == true ]]; then
+        show_banner
+        echo -e "${WHITE}  Rebuild mode: recompiling suckless tools only${NC}"
+        echo -e "${GRAY}    Copies updated configs into Arch rootfs,${NC}"
+        echo -e "${GRAY}    then rebuilds dwm + st + dmenu + dwmblocks.${NC}"
+        echo ""
+
+        if ! command -v proot-distro > /dev/null 2>&1; then
+            echo -e "  ${RED}✗${NC} proot-distro is not installed"
+            echo -e "    Run the full installer first: ${YELLOW}bash install.sh${NC}"
+            return 1
+        fi
+        if ! is_arch_installed; then
+            echo -e "  ${RED}✗${NC} Arch Linux rootfs not found"
+            echo -e "    Run the full installer first: ${YELLOW}bash install.sh${NC}"
+            return 1
+        fi
+
+        # Copy updated configs into Arch rootfs
+        local arch_rootfs="${PREFIX}/var/lib/proot-distro/installed-rootfs/archlinux"
+        local arch_home="${arch_rootfs}/root"
+
+        echo -e "  ${YELLOW}⏳${NC} Copying dotfiles into Arch rootfs..."
+        mkdir -p "${arch_home}/.dotfiles"
+        cp -r "${DOTFILES_DIR}/arch/"* "${arch_home}/.dotfiles/"
+        echo -e "  ${GREEN}✓${NC} Dotfiles copied"
+        echo ""
+
+        # Run only the build + dotfile symlink steps inside proot
+        proot-distro login archlinux -- bash /root/.dotfiles/setup.sh --build-only
+        echo ""
+        echo -e "  ${GREEN}✓${NC} Rebuild complete"
+        echo ""
+        return 0
+    fi
+
     show_banner
 
     echo -e "${WHITE}  This will install a minimal tiling desktop on your phone:${NC}"

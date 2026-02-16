@@ -10,14 +10,17 @@ set -euo pipefail
 #  Usage:
 #    bash setup.sh              # Full setup (packages + build + dotfiles)
 #    bash setup.sh --skip-build # Skip suckless rebuilds (safe from st)
+#    bash setup.sh --build-only # Rebuild suckless tools + relink dotfiles only
 #
 #  Called by: install.sh (via proot-distro login)
 #######################################################
 
 SKIP_BUILD=false
-if [[ "${1:-}" == "--skip-build" ]]; then
-    SKIP_BUILD=true
-fi
+BUILD_ONLY=false
+case "${1:-}" in
+    --skip-build) SKIP_BUILD=true ;;
+    --build-only) BUILD_ONLY=true ;;
+esac
 
 DOTFILES_DIR="/root/.dotfiles"
 
@@ -44,13 +47,23 @@ msg_error() {
 
 # ============== STEP 1: SYSTEM UPDATE ==============
 
+if [[ "$BUILD_ONLY" == true ]]; then
+    echo -e "${PURPLE}[1/7] Skipping system update (--build-only)${NC}"
+else
+
 echo -e "${PURPLE}[1/7] Updating Arch packages...${NC}"
 echo ""
 
 pacman -Syu --noconfirm
 msg "System updated"
 
+fi  # end BUILD_ONLY skip
+
 # ============== STEP 2: INSTALL PACKAGES ==============
+
+if [[ "$BUILD_ONLY" == true ]]; then
+    echo -e "${PURPLE}[2/7] Skipping package install (--build-only)${NC}"
+else
 
 echo ""
 echo -e "${PURPLE}[2/7] Installing packages...${NC}"
@@ -115,11 +128,13 @@ else
     fi
 fi
 
+fi  # end BUILD_ONLY skip
+
 # ============== STEP 3: BUILD SUCKLESS TOOLS ==============
 
 SUCKLESS_DIR="${DOTFILES_DIR}/suckless"
 
-if [[ "$SKIP_BUILD" == true ]]; then
+if [[ "$SKIP_BUILD" == true ]] && [[ "$BUILD_ONLY" == false ]]; then
     echo ""
     echo -e "${PURPLE}[3/7] Skipping suckless builds (--skip-build)${NC}"
     echo ""
@@ -357,6 +372,10 @@ fi
 
 # ============== STEP 5: INSTALL OH-MY-POSH ==============
 
+if [[ "$BUILD_ONLY" == true ]]; then
+    echo -e "${PURPLE}[5/7] Skipping oh-my-posh (--build-only)${NC}"
+else
+
 echo ""
 echo -e "${PURPLE}[5/7] Installing oh-my-posh...${NC}"
 echo ""
@@ -378,7 +397,13 @@ else
     msg "oh-my-posh installed"
 fi
 
+fi  # end BUILD_ONLY skip
+
 # ============== STEP 6: SET ZSH AS DEFAULT SHELL ==============
+
+if [[ "$BUILD_ONLY" == true ]]; then
+    echo -e "${PURPLE}[6/7] Skipping zsh default shell (--build-only)${NC}"
+else
 
 echo ""
 echo -e "${PURPLE}[6/7] Setting zsh as default shell...${NC}"
@@ -392,7 +417,13 @@ else
     msg "Default shell set to zsh"
 fi
 
+fi  # end BUILD_ONLY skip
+
 # ============== STEP 7: NEOVIM PLUGIN BOOTSTRAP ==============
+
+if [[ "$BUILD_ONLY" == true ]]; then
+    echo -e "${PURPLE}[7/7] Skipping Neovim plugins (--build-only)${NC}"
+else
 
 echo ""
 echo -e "${PURPLE}[7/7] Bootstrapping Neovim plugins...${NC}"
@@ -402,6 +433,8 @@ echo ""
 msg_start "Installing Neovim plugins (this may take a moment)..."
 nvim --headless "+Lazy! sync" +qa || true
 msg "Neovim plugins installed"
+
+fi  # end BUILD_ONLY skip
 
 echo ""
 msg "Arch Linux setup complete"
