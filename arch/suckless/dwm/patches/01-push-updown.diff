@@ -1,20 +1,10 @@
-From b2faf234f21e61327ded730024db37bb36635e30 Mon Sep 17 00:00:00 2001
-From: Alex Cole <ajzcole@airmail.cc>
-Date: Thu, 12 Nov 2020 17:36:52 +1300
-Subject: [PATCH] Push patch added
-
----
- dwm.c | 56 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 56 insertions(+)
-
 diff --git a/dwm.c b/dwm.c
-index 664c527..039ab00 100644
 --- a/dwm.c
 +++ b/dwm.c
 @@ -186,7 +186,10 @@ static void motionnotify(XEvent *e);
  static void movemouse(const Arg *arg);
  static Client *nexttiled(Client *c);
- static void pop(Client *);
+ static void pop(Client *c);
 +static Client *prevtiled(Client *c);
  static void propertynotify(XEvent *e);
 +static void pushdown(const Arg *arg);
@@ -22,7 +12,7 @@ index 664c527..039ab00 100644
  static void quit(const Arg *arg);
  static Monitor *recttomon(int x, int y, int w, int h);
  static void resize(Client *c, int x, int y, int w, int h, int interact);
-@@ -1209,6 +1212,16 @@ pop(Client *c)
+@@ -1218,6 +1221,16 @@ pop(Client *c)
  	arrange(c->mon);
  }
  
@@ -39,7 +29,7 @@ index 664c527..039ab00 100644
  void
  propertynotify(XEvent *e)
  {
-@@ -1246,6 +1259,49 @@ propertynotify(XEvent *e)
+@@ -1255,6 +1268,49 @@ propertynotify(XEvent *e)
  	}
  }
  
@@ -89,5 +79,3 @@ index 664c527..039ab00 100644
  void
  quit(const Arg *arg)
  {
--- 
-2.29.2
