@@ -27,6 +27,8 @@ and audio bridged from the Termux host. No root required.
 │  │  dwmblocks  ── status bar                   │   │
 │  │  picom      ── compositor                   │   │
 │  │  dunst      ── notifications                │   │
+│  │  neovim     ── editor (lazy.nvim plugins)    │   │
+│  │  opencode   ── AI coding assistant (TUI)    │   │
 │  │  firefox    ── browser                      │   │
 │  │  ranger     ── file manager                 │   │
 │  └────────────────────────────────────────────┘   │
@@ -66,8 +68,10 @@ The installer will:
 1. Update Termux packages
 2. Install X11, GPU drivers, and PulseAudio
 3. Install proot-distro and set up Arch Linux
-4. Build dwm, st, dmenu, and dwmblocks from source inside Arch
-5. Symlink all dotfiles into the Arch home directory
+4. Install Neovim, opencode, and dependencies inside Arch
+5. Build dwm, st, dmenu, and dwmblocks from source inside Arch
+6. Bootstrap Neovim plugins (lazy.nvim auto-sync)
+7. Symlink all dotfiles into the Arch home directory
 
 Installation takes approximately 15-30 minutes depending on your internet
 connection.
@@ -88,6 +92,37 @@ bash ~/start-desktop.sh
 ```bash
 bash ~/stop-desktop.sh
 ```
+
+### Neovim
+
+Open a terminal (st) and run:
+
+```bash
+nvim
+```
+
+Plugins are pre-installed during setup. If you need to update them:
+
+```
+:Lazy sync
+```
+
+### opencode
+
+opencode is a terminal-based AI coding assistant. Run it in any project
+directory:
+
+```bash
+opencode
+```
+
+Set your API key first (e.g., for Anthropic):
+
+```bash
+export ANTHROPIC_API_KEY="your-key-here"
+```
+
+Add it to your shell profile to persist across sessions.
 
 ## Keybindings
 
@@ -139,6 +174,26 @@ bash ~/stop-desktop.sh
 | Click on tag number | Switch to that tag |
 | Click on layout symbol | Toggle layout |
 
+### Neovim (Space as leader)
+
+| Keybinding | Action |
+|------------|--------|
+| `Space + Space` | Find files (telescope) |
+| `Space + sg` | Live grep (telescope) |
+| `Space + fb` | List buffers |
+| `Space + fh` | Help tags |
+| `Space + fr` | Recent files |
+| `Space + sd` | Diagnostics |
+| `Space + e` | Toggle file explorer (neo-tree) |
+| `Space + ?` | Show buffer keymaps (which-key) |
+| `Space + bd` | Delete buffer |
+| `Space + bp` | Pin buffer (bufferline) |
+| `Space + bo` | Close other buffers |
+| `Shift + h` | Previous buffer |
+| `Shift + l` | Next buffer |
+| `Ctrl + h/j/k/l` | Navigate between windows |
+| `jk` | Exit insert mode |
+
 ## File Structure
 
 ```
@@ -153,6 +208,7 @@ termux-dotfiles/
     ├── home/
     │   ├── .xinitrc         Session startup script
     │   └── .config/
+    │       ├── nvim/        Neovim config (lazy.nvim + plugins)
     │       ├── picom/       Compositor config
     │       ├── dunst/       Notification daemon config
     │       └── ranger/      File manager config
@@ -183,6 +239,7 @@ All tools use the **Catppuccin Mocha** color scheme with **Lavender**
 - `arch/suckless/dmenu/config.h` -- launcher colors
 - `arch/setup.sh` -- st terminal colors (sed block in `build_st()`)
 - `arch/home/.config/dunst/dunstrc` -- notification colors
+- `arch/home/.config/nvim/lua/plugins/catppuccin.lua` -- Neovim theme flavour
 - `arch/home/.xinitrc` -- root window background
 
 ### Modifying suckless tools
@@ -271,6 +328,12 @@ Android may kill background Termux processes. To prevent this:
 - The dwmblocks status bar shows: network | battery | volume | date/time
 - Use `Mod + Shift + 1-5` to organize windows across tags before switching
   between them with `Mod + 1-5`
+- In Neovim, press `Space` and wait -- **which-key** will show all available
+  keybindings after a short delay
+- Run `:checkhealth` in Neovim to verify all plugins and dependencies are
+  working correctly
+- **opencode** works best with a project directory -- `cd` into your project
+  before launching it
 
 ## License
 
