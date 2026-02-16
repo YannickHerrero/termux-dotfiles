@@ -14,7 +14,7 @@ set -euo pipefail
 #######################################################
 
 # ============== CONFIGURATION ==============
-TOTAL_STEPS=6
+TOTAL_STEPS=7
 CURRENT_STEP=0
 DOTFILES_DIR="$(cd "$(dirname "$0")" && pwd)"
 
@@ -155,7 +155,17 @@ step_repos() {
     install_pkg "x11-repo" "X11 Repository"
 }
 
-# ============== STEP 3: INSTALL DISPLAY + AUDIO ==============
+# ============== STEP 3: SETUP SHELL (ZSH + OH MY POSH) ==============
+
+step_shell() {
+    update_progress
+    echo -e "${PURPLE}[Step ${CURRENT_STEP}/${TOTAL_STEPS}] Setting up Zsh shell...${NC}"
+    echo ""
+
+    bash "${DOTFILES_DIR}/termux/setup-shell.sh"
+}
+
+# ============== STEP 4: INSTALL DISPLAY + AUDIO ==============
 
 step_display_audio() {
     update_progress
@@ -167,7 +177,7 @@ step_display_audio() {
     install_pkg "pulseaudio" "PulseAudio Sound Server"
 }
 
-# ============== STEP 4: INSTALL GPU DRIVERS ==============
+# ============== STEP 5: INSTALL GPU DRIVERS ==============
 
 step_gpu() {
     update_progress
@@ -184,7 +194,8 @@ step_gpu() {
 
     install_pkg "vulkan-loader-android" "Vulkan Loader"
 
-    # Install GPU config
+    # GPU config is sourced from ~/.zshrc (installed by step_shell)
+    # Also keep a bashrc fallback for non-interactive sessions
     mkdir -p ~/.config
     cp "${DOTFILES_DIR}/config/gpu.sh" ~/.config/gpu.sh
     if ! grep -q "config/gpu.sh" ~/.bashrc 2>/dev/null; then
@@ -194,7 +205,7 @@ step_gpu() {
     echo -e "  ${GREEN}✓${NC} GPU acceleration configured"
 }
 
-# ============== STEP 5: INSTALL PROOT-DISTRO + ARCH ==============
+# ============== STEP 6: INSTALL PROOT-DISTRO + ARCH ==============
 
 step_proot_arch() {
     update_progress
@@ -212,7 +223,7 @@ step_proot_arch() {
     fi
 }
 
-# ============== STEP 6: RUN ARCH SETUP ==============
+# ============== STEP 7: RUN ARCH SETUP ==============
 
 step_arch_setup() {
     update_progress
@@ -273,6 +284,7 @@ show_completion() {
     echo -e "    ${GREEN}bash ~/stop-desktop.sh${NC}"
     echo ""
     echo -e "${GRAY}  Tip: Open the Termux-X11 app before starting the desktop.${NC}"
+    echo -e "${GRAY}  Tip: Restart Termux to switch to your new Zsh shell.${NC}"
     echo ""
 }
 
@@ -284,6 +296,7 @@ main() {
     echo -e "${WHITE}  This will install a minimal tiling desktop on your phone:${NC}"
     echo -e "${GRAY}    dwm + st + dmenu + dwmblocks${NC}"
     echo -e "${GRAY}    Firefox, ranger, picom, dunst${NC}"
+    echo -e "${GRAY}    Zsh + Oh My Posh (Termux shell)${NC}"
     echo -e "${GRAY}    GPU acceleration via Mesa Zink/Turnip${NC}"
     echo ""
     echo -e "${YELLOW}  Press Enter to start, or Ctrl+C to cancel...${NC}"
@@ -292,6 +305,7 @@ main() {
     detect_device
     step_update
     step_repos
+    step_shell
     step_display_audio
     step_gpu
     step_proot_arch
