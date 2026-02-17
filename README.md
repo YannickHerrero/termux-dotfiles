@@ -4,7 +4,8 @@ Minimal tiling desktop for Android using Termux. Runs **dwm + st + dmenu +
 dwmblocks** inside an Arch Linux proot environment, with GPU acceleration
 and audio bridged from the Termux host. No root required.
 
-**Theme:** Catppuccin Mocha (Lavender accent)
+**Theme:** Catppuccin Mocha (Lavender accent) -- dynamically overridden by
+**pywal16** when a wallpaper is selected
 
 ## Architecture
 
@@ -30,6 +31,9 @@ and audio bridged from the Termux host. No root required.
 │  │  dunst      ── notifications               │  │
 │  │  neovim     ── editor (lazy.nvim plugins)  │  │
 │  │  opencode   ── AI coding assistant (TUI)   │  │
+│  │  pywal16    ── color scheme generator      │  │
+│  │  nsxiv      ── image viewer / picker       │  │
+│  │  feh        ── wallpaper setter            │  │
 │  │  firefox    ── browser                     │  │
 │  │  ranger     ── file manager                │  │
 │  └────────────────────────────────────────────┘  │
@@ -168,6 +172,8 @@ The Termux host shell is **Zsh** with:
 | `Mod + Enter` | Open terminal (st) |
 | `Mod + Space` | Open application launcher (dmenu) |
 | `Mod + b` | Open Firefox |
+| `Mod + w` | Open wallpaper selector (nsxiv + pywal16) |
+| `Mod + F5` | Reload colors from X resources |
 | `Mod + Shift + c` | Close focused window |
 | `Mod + Shift + q` | Quit dwm |
 | `Mod + Ctrl + Shift + q` | Restart dwm in-place |
@@ -269,15 +275,26 @@ termux-dotfiles/
     ├── setup.sh            Arch guest setup (pacman, suckless builds)
     ├── home/
     │   ├── .xinitrc         Session startup script
+    │   ├── .zshrc           Shell config (zinit, pywal sequences)
+    │   ├── .local/bin/
+    │   │   ├── set-wallpaper  Wallpaper selector (nsxiv + pywal16 + feh)
+    │   │   └── wal-restore    Restore pywal theme on session start
     │   └── .config/
     │       ├── nvim/        Neovim config (lazy.nvim + plugins)
     │       ├── picom/       Compositor config
     │       ├── dunst/       Notification daemon config
-    │       └── ranger/      File manager config
+    │       ├── ranger/      File manager config
+    │       └── wal/templates/
+    │           └── colors-dwm.Xresources  Pywal → dwm X resource mapping
     └── suckless/
-        ├── dwm/             Window manager
+        ├── dwm/             Window manager (forked source, all patches baked in)
+        │   ├── dwm.c        Main source (includes xrdb support)
+        │   ├── drw.c/drw.h  Drawing library
         │   ├── config.h     Full configuration
-        │   └── patches/     .diff patches (applied in order)
+        │   ├── config.mk    Build config
+        │   ├── Makefile     Build system
+        │   ├── vanitygaps.c Gap/layout functions
+        │   └── util.c/util.h Utility functions
         ├── st/              Terminal emulator
         │   ├── config.h     Reference (applied via sed)
         │   └── patches/
@@ -294,34 +311,43 @@ termux-dotfiles/
 
 ### Changing colors
 
-All tools use the **Catppuccin Mocha** color scheme with **Lavender**
-(`#b4befe`) as the accent color. To change the theme, update these files:
+Press `Mod + w` to open the **wallpaper selector**. Pick an image from
+`~/wallpapers` and pywal16 will generate a matching color scheme that
+instantly applies to dwm, st, dunst, and dwmblocks. The theme persists
+across restarts.
+
+**Catppuccin Mocha** (Lavender accent `#b4befe`) is the compiled-in default
+used when no pywal theme has been set.
+
+To change the static defaults or tool-specific colors, edit:
 
 - `arch/suckless/dwm/config.h` -- bar and border colors
 - `arch/suckless/dmenu/config.h` -- launcher colors
 - `arch/setup.sh` -- st terminal colors (sed block in `build_st()`)
 - `arch/home/.config/dunst/dunstrc` -- notification colors
+- `arch/home/.config/wal/templates/colors-dwm.Xresources` -- pywal → dwm color mapping
 - `arch/home/.config/nvim/lua/plugins/catppuccin.lua` -- Neovim theme flavour
-- `arch/home/.xinitrc` -- root window background
 - `termux/starship/starship.toml` -- Termux prompt colors
 
 ### Suckless Patches
 
-Patches are stored as `.diff` files in `arch/suckless/<tool>/patches/` and
-applied in filename order during the build (`arch/setup.sh`). All patches
-are tested against clean upstream sources.
+**dwm** is a fork -- all patches are baked directly into the source files
+in `arch/suckless/dwm/`. There are no `.diff` files to apply. Other tools
+(st, dmenu, dwmblocks) still use the patch workflow with `.diff` files in
+their `patches/` directories, applied in filename order during the build.
 
-#### dwm 6.5 (7 patches)
+#### dwm 6.5 (8 features, forked source)
 
-| # | Patch | Description |
-|---|-------|-------------|
-| 01 | push-updown | Move windows up/down in the stack (`Mod+Shift+j/k`) |
-| 02 | vanitygaps | Inner/outer gaps between windows (reduced for mobile) |
-| 03 | swallow | Terminal windows swallow spawned GUI apps (e.g. `mpv`) |
-| 04 | hide-vacant-tags | Only show tags that have windows |
-| 05 | restartsig | Restart dwm in-place (`Mod+Ctrl+Shift+q` or `kill -HUP`) |
-| 06 | colorbar | Per-element bar colors (tags, status, info area) |
-| 07 | statuscmd | Clickable status bar blocks (integrates with dwmblocks) |
+| Feature | Description |
+|---------|-------------|
+| push-updown | Move windows up/down in the stack (`Mod+Shift+j/k`) |
+| vanitygaps | Inner/outer gaps between windows (reduced for mobile) |
+| swallow | Terminal windows swallow spawned GUI apps (e.g. `mpv`) |
+| hide-vacant-tags | Only show tags that have windows |
+| restartsig | Restart dwm in-place (`Mod+Ctrl+Shift+q` or `kill -HUP`) |
+| colorbar | Per-element bar colors (tags, status, info area) |
+| statuscmd | Clickable status bar blocks (integrates with dwmblocks) |
+| xrdb | Live color reload from X resources (`Mod+F5`) |
 
 #### st 0.9.2 (6 features in 2 patches)
 
@@ -341,31 +367,41 @@ are tested against clean upstream sources.
 
 Suckless tools are configured by editing C header files and recompiling.
 
-1. Edit the `config.h` in the relevant `arch/suckless/<tool>/` directory
-2. Rebuild inside the Arch proot:
+#### dwm (forked source)
+
+Edit the source files directly in `arch/suckless/dwm/` and rebuild:
 
 ```bash
 proot-distro login archlinux
-cd /tmp && git clone https://git.suckless.org/dwm && cd dwm
-# Apply any patches first
-for p in /root/.dotfiles/suckless/dwm/patches/*.diff; do
-    git apply "$p" 2>/dev/null || patch -p1 < "$p"
-done
-cp /root/.dotfiles/suckless/dwm/config.h .
+cd /root/.dotfiles/suckless/dwm
 make clean install
+```
+
+#### st, dmenu, dwmblocks (patch workflow)
+
+1. Edit the `config.h` in the relevant `arch/suckless/<tool>/` directory
+2. Rebuild via the setup script:
+
+```bash
+proot-distro login archlinux
+bash /root/.dotfiles/setup.sh --build-only
 ```
 
 For **st** specifically, the config is applied via sed (see `arch/setup.sh`,
 the `build_st()` function). Edit the sed commands there rather than a
 config.h file.
 
-### Adding patches
+### Adding patches (st, dmenu, dwmblocks)
+
+For **dwm**, edit the forked source directly -- there is no patch workflow.
+
+For other tools:
 
 1. Download the `.diff` file from [suckless.org/patches](https://suckless.org/patches/)
-2. Place it in the appropriate `patches/` directory (e.g., `arch/suckless/dwm/patches/`)
+2. Place it in the appropriate `patches/` directory (e.g., `arch/suckless/st/patches/`)
 3. Patches are applied in filename order, so prefix with numbers if order matters
-   (e.g., `01-gaps.diff`, `02-status2d.diff`)
-4. Rebuild the tool (see above)
+   (e.g., `01-alpha.diff`, `02-scrollback.diff`)
+4. Rebuild with `bash /root/.dotfiles/setup.sh --build-only`
 
 ### Adding status bar blocks
 
@@ -417,6 +453,8 @@ Android may kill background Termux processes. To prevent this:
 
 ## Tips
 
+- **Wallpaper selector** (`Mod + w`) -- drop images in `~/wallpapers` and
+  pick one to instantly retheme the entire desktop
 - **Monocle layout** (`Mod + m`) is ideal when using the phone without an
   external keyboard -- it gives each app full screen
 - **Bluetooth keyboard/mouse** significantly improve the dwm experience
