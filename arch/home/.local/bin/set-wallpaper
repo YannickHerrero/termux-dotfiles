@@ -1,0 +1,127 @@
+#!/bin/bash
+set -euo pipefail
+# ============== set-wallpaper ==============
+# Wallpaper selector with live pywal16 color scheme.
+#
+# Opens nsxiv in thumbnail mode to pick a wallpaper from ~/wallpapers,
+# generates a color palette with pywal16, sets the wallpaper with feh,
+# and live-reloads colors across dwm, st, dmenu, dunst, and dwmblocks.
+#
+# Usage:
+#   set-wallpaper              # Interactive picker (nsxiv thumbnails)
+#   set-wallpaper <image>      # Set specific image directly
+#
+# Keybind: Alt+w (configured in dwm config.h)
+
+WALLPAPER_DIR="${HOME}/wallpapers"
+
+# ============== HELPER FUNCTIONS ==============
+
+notify() {
+    notify-send -t 3000 "Wallpaper" "$1" 2>/dev/null || true
+}
+
+die() {
+    notify-send -u critical "Wallpaper" "$1" 2>/dev/null || true
+    echo "Error: $1" >&2
+    exit 1
+}
+
+# ============== SELECT WALLPAPER ==============
+
+if [[ $# -ge 1 ]]; then
+    # Direct image path passed as argument
+    selected="$1"
+else
+    # Ensure wallpaper directory exists
+    if [[ ! -d "$WALLPAPER_DIR" ]]; then
+        mkdir -p "$WALLPAPER_DIR"
+        die "No wallpapers found. Add images to ${WALLPAPER_DIR}"
+    fi
+
+    # Check for images
+    shopt -s nullglob
+    images=("${WALLPAPER_DIR}"/*.{jpg,jpeg,png,bmp,webp,gif})
+    shopt -u nullglob
+    if [[ ${#images[@]} -eq 0 ]]; then
+        die "No images found in ${WALLPAPER_DIR}"
+    fi
+
+    # Open nsxiv in thumbnail mode, output selected file on stdout
+    selected=$(nsxiv -t -o "$WALLPAPER_DIR" 2>/dev/null | head -1) || true
+    [[ -z "$selected" ]] && exit 0
+fi
+
+# Validate selected file
+if [[ ! -f "$selected" ]]; then
+    die "File not found: ${selected}"
+fi
+
+# ============== GENERATE COLOR SCHEME ==============
+
+# Run pywal16: generate palette from image, skip setting wallpaper (-n)
+# pywal sends OSC sequences to running terminals automatically (-s for st)
+wal -i "$selected" -n -s -t -e 2>/dev/null || \
+    wal -i "$selected" -n -s -t 2>/dev/null || \
+    wal -i "$selected" -n 2>/dev/null || \
+    die "pywal16 failed to generate colors"
+
+# ============== SET WALLPAPER ==============
+
+feh --bg-fill "$selected" --no-fehbg 2>/dev/null || \
+    die "feh failed to set wallpaper"
+
+# Symlink current wallpaper for session persistence
+ln -sf "$selected" "${HOME}/.config/wallpaper"
+
+# ============== RELOAD DWM COLORS ==============
+
+# Merge pywal's Xresources + custom dwm template into X server
+if [[ -f "${HOME}/.cache/wal/colors.Xresources" ]]; then
+    xrdb -merge "${HOME}/.cache/wal/colors.Xresources" 2>/dev/null || true
+fi
+if [[ -f "${HOME}/.cache/wal/colors-dwm.Xresources" ]]; then
+    xrdb -merge "${HOME}/.cache/wal/colors-dwm.Xresources" 2>/dev/null || true
+fi
+
+# Signal dwm to reload colors from xrdb
+# Uses xdotool to simulate the reload keybind (Mod1+F5)
+xdotool key alt+F5 2>/dev/null || true
+
+# ============== RELOAD TERMINAL COLORS ==============
+
+# Send pywal OSC escape sequences to all running terminals
+if [[ -f "${HOME}/.cache/wal/sequences" ]]; then
+    for term in /dev/pts/[0-9]*; do
+        [[ -w "$term" ]] && cat "${HOME}/.cache/wal/sequences" > "$term" 2>/dev/null &
+    done
+    wait 2>/dev/null || true
+fi
+
+# ============== RELOAD DUNST ==============
+
+# Restart dunst with new colors
+if command -v dunst > /dev/null 2>&1; then
+    # Source colors for dunst CLI overrides
+    . "${HOME}/.cache/wal/colors.sh"
+
+    pkill dunst 2>/dev/null || true
+    sleep 0.1
+
+    dunst \
+        -config "${HOME}/.config/dunst/dunstrc" \
+        -frame_color "${color4:-#b4befe}" \
+        -lb "${background:-#1e1e2e}" -lf "${foreground:-#cdd6f4}" -lfr "${color8:-#313244}" \
+        -nb "${background:-#1e1e2e}" -nf "${foreground:-#cdd6f4}" -nfr "${color4:-#b4befe}" \
+        -cb "${background:-#1e1e2e}" -cf "${color1:-#f38ba8}" -cfr "${color1:-#f38ba8}" &
+    disown
+fi
+
+# ============== REFRESH STATUS BAR ==============
+
+# Signal dwmblocks to refresh all blocks
+pkill -RTMIN dwmblocks 2>/dev/null || true
+
+# ============== DONE ==============
+
+notify "Theme applied from $(basename "$selected")"

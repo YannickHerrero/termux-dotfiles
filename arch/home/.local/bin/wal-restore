@@ -1,0 +1,34 @@
+#!/bin/bash
+# ============== wal-restore ==============
+# Restore pywal16 color scheme and wallpaper on session start.
+# Called from .xinitrc before dwm launches.
+#
+# If no pywal cache exists (first boot), falls back to
+# Catppuccin Mocha defaults (solid background color).
+
+# ============== RESTORE X RESOURCES ==============
+
+if [[ -f "${HOME}/.cache/wal/colors.Xresources" ]]; then
+    xrdb -merge "${HOME}/.cache/wal/colors.Xresources" 2>/dev/null || true
+fi
+
+if [[ -f "${HOME}/.cache/wal/colors-dwm.Xresources" ]]; then
+    xrdb -merge "${HOME}/.cache/wal/colors-dwm.Xresources" 2>/dev/null || true
+fi
+
+# ============== RESTORE TERMINAL COLORS ==============
+
+# Apply pywal sequences to current terminal (if running in one)
+if [[ -f "${HOME}/.cache/wal/sequences" ]]; then
+    cat "${HOME}/.cache/wal/sequences" 2>/dev/null || true
+fi
+
+# ============== RESTORE WALLPAPER ==============
+
+if [[ -L "${HOME}/.config/wallpaper" ]] && [[ -f "${HOME}/.config/wallpaper" ]]; then
+    feh --bg-fill "${HOME}/.config/wallpaper" --no-fehbg 2>/dev/null || \
+        xsetroot -solid "#1e1e2e"
+else
+    # Fallback: Catppuccin Mocha base color
+    xsetroot -solid "#1e1e2e"
+fi
