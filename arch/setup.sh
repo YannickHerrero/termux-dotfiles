@@ -92,6 +92,22 @@ pacman -S --needed --noconfirm \
     ttf-jetbrains-mono-nerd ttf-dejavu ttf-liberation noto-fonts
 msg "Applications installed"
 
+# Wallpaper selector + pywal dependencies
+msg_start "Installing nsxiv and pywal16 dependencies..."
+pacman -S --needed --noconfirm \
+    nsxiv xorg-xrdb python python-pip imagemagick
+msg "nsxiv + xrdb + python installed"
+
+msg_start "Installing pywal16..."
+if command -v wal > /dev/null 2>&1; then
+    msg "pywal16 already installed"
+else
+    pip install --break-system-packages pywal16 2>/dev/null || \
+        pip install pywal16 || \
+        msg_error "pywal16 install failed, wallpaper selector will not work"
+    msg "pywal16 installed"
+fi
+
 # Build tools (needed for suckless compilation and telescope-fzf-native)
 msg_start "Installing build tools..."
 pacman -S --needed --noconfirm \
@@ -369,6 +385,22 @@ if [[ -d "${SUCKLESS_DIR}/dwmblocks/scripts" ]]; then
     done
     msg "Linked dwmblocks scripts"
 fi
+
+# Symlink wallpaper selector scripts to PATH
+if [[ -d "${HOME_SRC}/.local/bin" ]]; then
+    mkdir -p /usr/local/bin
+    for script in "${HOME_SRC}/.local/bin/"*; do
+        if [[ -f "$script" ]]; then
+            chmod +x "$script"
+            ln -sf "$script" /usr/local/bin/"$(basename "$script")"
+        fi
+    done
+    msg "Linked user scripts (set-wallpaper, wal-restore)"
+fi
+
+# Create wallpapers directory
+mkdir -p ~/wallpapers
+msg "Created ~/wallpapers directory"
 
 # ============== STEP 5: INSTALL OH-MY-POSH ==============
 
