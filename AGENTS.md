@@ -44,8 +44,13 @@ termux-dotfiles/
       .local/bin/set-wallpaper           # Wallpaper selector (nsxiv + pywal16 + feh)
       .local/bin/wal-restore             # Restore pywal theme on session start
     suckless/
-      dwm/config.h                       # dwm configuration (full config.h)
-      dwm/patches/                       # dwm patches (.diff files)
+      dwm/                               # Forked dwm source (fully patched, edit directly)
+        dwm.c                            # Main source (includes xrdb support)
+        drw.c, drw.h                     # Drawing library
+        config.h                         # dwm configuration
+        config.mk, Makefile              # Build system
+        vanitygaps.c                     # Gap/layout functions
+        util.c, util.h                   # Utility functions
       st/config.h                        # st customization reference (applied via sed)
       st/patches/                        # st patches
       dmenu/config.h                     # dmenu configuration (full config.h)
@@ -60,7 +65,7 @@ termux-dotfiles/
 
 ## Build / Lint / Test Commands
 
-No CI pipeline. The project consists of shell scripts and C config headers.
+No CI pipeline. The project consists of shell scripts and C source.
 
 ### Full install (on Termux)
 
@@ -68,16 +73,24 @@ No CI pipeline. The project consists of shell scripts and C config headers.
 bash install.sh                          # One-time: GPU, X11, audio, proot Arch, suckless builds
 ```
 
-### Rebuild a single suckless tool (inside Arch proot)
+### Rebuild dwm (inside Arch proot)
 
 ```bash
 proot-distro login archlinux
-cd /tmp && git clone https://git.suckless.org/dwm && cd dwm
-cp /root/.dotfiles/suckless/dwm/config.h .
-make clean install
+cd /root/.dotfiles/suckless/dwm
+make clean install                       # Full source is in the repo, no patching needed
 ```
 
-For `st`, patch first, then rely on `arch/setup.sh` sed customizations
+### Rebuild st, dmenu, or dwmblocks
+
+These still use the upstream clone + patch workflow via `arch/setup.sh`:
+
+```bash
+proot-distro login archlinux
+bash /root/.dotfiles/setup.sh --build-only
+```
+
+For `st`, customizations are applied via **sed on `config.def.h`** at build time
 (`font`, `borderpx`, `tabspaces`, `bellvolume`, `alpha`, Catppuccin colors)
 instead of maintaining a full `config.h`.
 
@@ -112,9 +125,9 @@ Use section banners: `# ============== SECTION NAME ==============`
 
 ### Suckless config.h Files (C)
 
-- dwm, dmenu, dwmblocks: ship a **complete `config.h`** that replaces `config.def.h`
-- dwm xrdb support: applied via **sed/awk on `dwm.c`/`drw.c`/`drw.h`** at build time
-  (like st, avoids fragile patch conflicts with colorbar/statuscmd)
+- dwm: **full forked source** lives in `arch/suckless/dwm/`. Edit the C
+  files directly -- no patches, no clone, no sed hacks. Build with `make`.
+- dmenu, dwmblocks: ship a **complete `config.h`** that replaces `config.def.h`
 - st: customizations applied via **sed on `config.def.h`** at build time
   (avoids maintaining 300+ lines of key mapping boilerplate)
 - Patches go in `<tool>/patches/` as `.diff` files, applied in filename order
@@ -124,9 +137,9 @@ Use section banners: `# ============== SECTION NAME ==============`
 
 ### Current Patch Sets (reference)
 
-- `dwm` (base: `6.5`):
-  `01-push-updown`, `02-vanitygaps`, `03-swallow`, `04-hide-vacant-tags`,
-  `05-restartsig`, `06-colorbar`, `07-statuscmd`, `08-xrdb`
+- `dwm` (base: `6.5`): **forked -- all patches baked into source**
+  push-updown, vanitygaps, swallow, hide-vacant-tags,
+  restartsig, colorbar, statuscmd, xrdb
 - `st` (base: `0.9.2`):
   `01-ligatures-alpha-scrollback-ringbuffer`,
   `02-scrollback-mouse-changealpha-anysize`
@@ -135,8 +148,9 @@ Use section banners: `# ============== SECTION NAME ==============`
 
 ### Patch Compatibility Rules
 
-- Always verify the **full chain** applies on a clean upstream checkout,
-  not just individual patches in isolation
+- **dwm**: edit source directly, no patch files to maintain
+- **st, dmenu, dwmblocks**: verify the **full chain** applies on a
+  clean upstream checkout, not just individual patches in isolation
 - If patch context breaks due to earlier patches, fix the `.diff` hunk context
   and line counts (do not reorder unless intentionally redesigning the chain)
 - Keep numbering stable unless a deliberate migration is documented
