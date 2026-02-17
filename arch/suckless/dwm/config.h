@@ -11,6 +11,7 @@
  *   05-restartsig     -- Restart dwm in-place via keybind or signal
  *   06-colorbar       -- Per-element bar color schemes
  *   07-statuscmd      -- Clickable status bar blocks (dwmblocks integration)
+ *   08-xrdb           -- Runtime color reload from X resources (pywal integration)
  *
  * Keybindings (Alt = MODKEY):
  *   Alt+hjkl            focus windows
@@ -18,6 +19,8 @@
  *   Alt+Space            launcher (dmenu)
  *   Alt+Enter            terminal (st)
  *   Alt+b                browser (firefox)
+ *   Alt+w                wallpaper selector (set-wallpaper)
+ *   Alt+F5               reload colors from xrdb
  *   Alt+f                toggle fullscreen (monocle)
  *   Alt+t                toggle floating
  *   Alt+Shift+t          tiled layout
@@ -53,25 +56,35 @@ static const char *fonts[]          = { "DejaVu Sans Mono:size=11" };
 static const char dmenufont[]       = "DejaVu Sans Mono:size=11";
 
 /* ============== CATPPUCCIN MOCHA COLOR SCHEME ============== */
-static const char col_base[]        = "#1e1e2e"; /* Base */
-static const char col_mantle[]      = "#181825"; /* Mantle */
-static const char col_surface0[]    = "#313244"; /* Surface0 */
-static const char col_overlay0[]    = "#6c7086"; /* Overlay0 */
-static const char col_subtext0[]    = "#a6adc8"; /* Subtext0 */
-static const char col_subtext1[]    = "#bac2de"; /* Subtext1 */
-static const char col_text[]        = "#cdd6f4"; /* Text */
-static const char col_lavender[]    = "#b4befe"; /* Lavender (accent) */
+/* Mutable color variables — overwritten at runtime by xrdb (Mod+F5).
+ * Catppuccin Mocha values serve as compile-time defaults. */
+static char col_normfg[]      = "#cdd6f4"; /* Text */
+static char col_normbg[]      = "#1e1e2e"; /* Base */
+static char col_normborder[]  = "#313244"; /* Surface0 */
+static char col_selfg[]       = "#1e1e2e"; /* Base */
+static char col_selbg[]       = "#b4befe"; /* Lavender (accent) */
+static char col_selborder[]   = "#b4befe"; /* Lavender (accent) */
+static char col_statusfg[]    = "#bac2de"; /* Subtext1 */
+static char col_statusbg[]    = "#181825"; /* Mantle */
+static char col_tagsselfg[]   = "#1e1e2e"; /* Base */
+static char col_tagsselbg[]   = "#b4befe"; /* Lavender */
+static char col_tagsnormfg[]  = "#6c7086"; /* Overlay0 */
+static char col_tagsnormbg[]  = "#1e1e2e"; /* Base */
+static char col_infoselfg[]   = "#cdd6f4"; /* Text */
+static char col_infoselbg[]   = "#313244"; /* Surface0 */
+static char col_infonormfg[]  = "#a6adc8"; /* Subtext0 */
+static char col_infonormbg[]  = "#1e1e2e"; /* Base */
 
 /* colorbar: 7 color schemes for bar elements */
-static const char *colors[][3]      = {
-	/*                    fg              bg             border   */
-	[SchemeNorm]      = { col_text,       col_base,      col_surface0  },
-	[SchemeSel]       = { col_base,       col_lavender,  col_lavender  },
-	[SchemeStatus]    = { col_subtext1,   col_mantle,    "#000000"     }, /* statusbar right */
-	[SchemeTagsSel]   = { col_base,       col_lavender,  "#000000"     }, /* tagbar selected */
-	[SchemeTagsNorm]  = { col_overlay0,   col_base,      "#000000"     }, /* tagbar unselected */
-	[SchemeInfoSel]   = { col_text,       col_surface0,  "#000000"     }, /* infobar selected */
-	[SchemeInfoNorm]  = { col_subtext0,   col_base,      "#000000"     }, /* infobar unselected */
+static char *colors[][3]      = {
+	/*                    fg              bg              border   */
+	[SchemeNorm]      = { col_normfg,     col_normbg,     col_normborder },
+	[SchemeSel]       = { col_selfg,      col_selbg,      col_selborder  },
+	[SchemeStatus]    = { col_statusfg,   col_statusbg,   col_normbg     }, /* statusbar right */
+	[SchemeTagsSel]   = { col_tagsselfg,  col_tagsselbg,  col_normbg     }, /* tagbar selected */
+	[SchemeTagsNorm]  = { col_tagsnormfg, col_tagsnormbg, col_normbg     }, /* tagbar unselected */
+	[SchemeInfoSel]   = { col_infoselfg,  col_infoselbg,  col_normbg     }, /* infobar selected */
+	[SchemeInfoNorm]  = { col_infonormfg, col_infonormbg, col_normbg     }, /* infobar unselected */
 };
 
 /* tagging -- 9 workspaces */
@@ -122,7 +135,7 @@ static const Layout layouts[] = {
 /* commands */
 static char dmenumon[2] = "0"; /* component of dmenucmd, manipulated in spawn() */
 static const char *dmenucmd[]  = { "dmenu_run", "-m", dmenumon, "-fn", dmenufont,
-	"-nb", col_base, "-nf", col_text, "-sb", col_lavender, "-sf", col_base, NULL };
+	"-nb", col_normbg, "-nf", col_normfg, "-sb", col_selbg, "-sf", col_selfg, NULL };
 static const char *termcmd[]   = { "st", NULL };
 static const char *browsercmd[] = { "firefox", NULL };
 
@@ -141,6 +154,10 @@ static const Key keys[] = {
 	{ MODKEY,                       XK_space,  spawn,          {.v = dmenucmd } },
 	{ MODKEY,                       XK_Return, spawn,          {.v = termcmd } },
 	{ MODKEY,                       XK_b,      spawn,          {.v = browsercmd } },
+	{ MODKEY,                       XK_w,      spawn,          SHCMD("set-wallpaper") },
+
+	/* reload colors from xrdb */
+	{ MODKEY,                       XK_F5,     xrdb,           {.v = NULL } },
 
 	/* focus windows: Alt + hjkl */
 	{ MODKEY,                       XK_h,      focusstack,     {.i = -1 } },
