@@ -203,9 +203,178 @@ build_suckless() {
     msg "Built and installed ${name}"
 }
 
+# Build dwm with xrdb support (sed-based, like st)
+build_dwm() {
+    local build_path="${BUILD_DIR}/dwm"
+
+    msg_start "Building dwm..."
+
+    if [[ -d "$build_path" ]]; then
+        rm -rf "$build_path"
+    fi
+    git clone "https://git.suckless.org/dwm" "$build_path"
+    git -C "$build_path" checkout "6.5"
+
+    # Apply patches (01-07, skip 08-xrdb.diff — applied via sed below)
+    if [[ -d "${SUCKLESS_DIR}/dwm/patches" ]]; then
+        for p in "${SUCKLESS_DIR}/dwm/patches/"*.diff; do
+            if [[ -f "$p" ]] && [[ "$(basename "$p")" != "08-xrdb.diff" ]]; then
+                git -C "$build_path" apply "$p" 2>/dev/null || \
+                    patch -d "$build_path" -p1 < "$p" 2>/dev/null || \
+                    msg_error "Patch failed: $(basename "$p")"
+            fi
+        done
+    fi
+
+    # Copy config.h
+    cp "${SUCKLESS_DIR}/dwm/config.h" "${build_path}/config.h"
+
+    # --- xrdb patch via C code injection (runtime color reload) ---
+    local dwmc="${build_path}/dwm.c"
+    local drwc="${build_path}/drw.c"
+    local drwh="${build_path}/drw.h"
+
+    # Write C code fragments to temp files (avoids sed escaping nightmares)
+    local tmpdir="${build_path}/xrdb-fragments"
+    mkdir -p "$tmpdir"
+
+    # Fragment: XRDB_LOAD_COLOR macro
+    cat > "${tmpdir}/macro.c" << 'XRDB_MACRO'
+#define XRDB_LOAD_COLOR(R,V)    if (XrmGetResource(xrdb, R, NULL, &type, &value) == True) { \
+                                  if (value.addr != NULL && strnlen(value.addr, 8) == 7 && value.addr[0] == '#') { \
+                                    int i = 1; \
+                                    for (; i <= 6; i++) { \
+                                      if (value.addr[i] < 48) break; \
+                                      if (value.addr[i] > 57 && value.addr[i] < 65) break; \
+                                      if (value.addr[i] > 70 && value.addr[i] < 97) break; \
+                                      if (value.addr[i] > 102) break; \
+                                    } \
+                                    if (i == 7) { \
+                                      strncpy(V, value.addr, 7); \
+                                      V[7] = '\0'; \
+                                    } \
+                                  } \
+                                }
+XRDB_MACRO
+
+    # Fragment: loadxrdb() function
+    cat > "${tmpdir}/loadxrdb.c" << 'XRDB_LOAD'
+
+void
+loadxrdb(void)
+{
+	Display *display;
+	char *resm;
+	XrmDatabase xrdb;
+	char *type;
+	XrmValue value;
+
+	display = XOpenDisplay(NULL);
+
+	if (display != NULL) {
+		resm = XResourceManagerString(display);
+
+		if (resm != NULL) {
+			xrdb = XrmGetStringDatabase(resm);
+
+			if (xrdb != NULL) {
+				XRDB_LOAD_COLOR("dwm.normfgcolor",     col_normfg);
+				XRDB_LOAD_COLOR("dwm.normbgcolor",     col_normbg);
+				XRDB_LOAD_COLOR("dwm.normbordercolor", col_normborder);
+				XRDB_LOAD_COLOR("dwm.selfgcolor",      col_selfg);
+				XRDB_LOAD_COLOR("dwm.selbgcolor",      col_selbg);
+				XRDB_LOAD_COLOR("dwm.selbordercolor",  col_selborder);
+				XRDB_LOAD_COLOR("dwm.statusfgcolor",   col_statusfg);
+				XRDB_LOAD_COLOR("dwm.statusbgcolor",   col_statusbg);
+				XRDB_LOAD_COLOR("dwm.tagsselfgcolor",  col_tagsselfg);
+				XRDB_LOAD_COLOR("dwm.tagsselbgcolor",  col_tagsselbg);
+				XRDB_LOAD_COLOR("dwm.tagsnormfgcolor", col_tagsnormfg);
+				XRDB_LOAD_COLOR("dwm.tagsnormbgcolor", col_tagsnormbg);
+				XRDB_LOAD_COLOR("dwm.infoselfgcolor",  col_infoselfg);
+				XRDB_LOAD_COLOR("dwm.infoselbgcolor",  col_infoselbg);
+				XRDB_LOAD_COLOR("dwm.infonormfgcolor", col_infonormfg);
+				XRDB_LOAD_COLOR("dwm.infonormbgcolor", col_infonormbg);
+			}
+		}
+	}
+
+	XCloseDisplay(display);
+}
+XRDB_LOAD
+
+    # Fragment: xrdb() keybind handler
+    cat > "${tmpdir}/xrdb_handler.c" << 'XRDB_HANDLER'
+
+void
+xrdb(const Arg *arg)
+{
+	loadxrdb();
+	int i;
+	for (i = 0; i < LENGTH(colors); i++)
+		scheme[i] = drw_scm_create(drw, colors[i], 3);
+	focus(NULL);
+	arrange(NULL);
+}
+
+XRDB_HANDLER
+
+    # 1. Add #include <X11/Xresource.h> after Xproto.h
+    sed -i '/#include <X11\/Xproto.h>/a #include <X11\/Xresource.h>' "$dwmc"
+
+    # 2. Add XRDB_LOAD_COLOR macro after TEXTW line
+    sed -i '/^#define TEXTW/r '"${tmpdir}/macro.c" "$dwmc"
+
+    # 3. Add function declarations
+    sed -i '/^static void manage(/i static void loadxrdb(void);' "$dwmc"
+    sed -i '/^static void zoom(/i static void xrdb(const Arg *arg);' "$dwmc"
+
+    # 4. Insert loadxrdb() after killclient() closing brace
+    # Find the closing brace of killclient and insert after it
+    # Use awk for reliable multi-line insertion after a specific function
+    awk '
+    /^killclient\(const Arg/ { in_killclient=1 }
+    in_killclient && /^}/ { in_killclient=0; print; found=1; next }
+    found && !inserted {
+        while ((getline line < "'"${tmpdir}/loadxrdb.c"'") > 0) print line
+        close("'"${tmpdir}/loadxrdb.c"'")
+        inserted=1
+    }
+    { print }
+    ' "$dwmc" > "${dwmc}.tmp" && mv "${dwmc}.tmp" "$dwmc"
+
+    # 5. Insert xrdb() handler before zoom()
+    awk '
+    /^zoom\(const Arg/ && !inserted {
+        while ((getline line < "'"${tmpdir}/xrdb_handler.c"'") > 0) print line
+        close("'"${tmpdir}/xrdb_handler.c"'")
+        inserted=1
+    }
+    { print }
+    ' "$dwmc" > "${dwmc}.tmp" && mv "${dwmc}.tmp" "$dwmc"
+
+    # 6. Add XrmInitialize() + loadxrdb() in main() before setup()
+    sed -i '/checkotherwm();/a \\tXrmInitialize();\n\tloadxrdb();' "$dwmc"
+
+    # 7. Fix drw.c: drop const from drw_scm_create parameter
+    sed -i 's/drw_scm_create(Drw \*drw, const char \*clrnames\[\]/drw_scm_create(Drw *drw, char *clrnames[]/' "$drwc"
+
+    # 8. Fix drw.h: drop const from drw_scm_create declaration
+    sed -i 's/Clr \*drw_scm_create(Drw \*drw, const char \*clrnames\[\]/Clr *drw_scm_create(Drw *drw, char *clrnames[]/' "$drwh"
+
+    # Cleanup
+    rm -rf "$tmpdir"
+
+    msg "Applied xrdb modifications (sed)"
+
+    # Build and install
+    make -C "$build_path" clean install
+
+    msg "Built and installed dwm"
+}
+
 # Build st last — rebuilding st replaces the running terminal binary,
 # which can kill the session. Everything else should complete first.
-build_suckless "dwm"       "https://git.suckless.org/dwm"       "6.5"
+build_dwm
 build_suckless "dmenu"     "https://git.suckless.org/dmenu"     "5.3"
 build_suckless "dwmblocks" "https://github.com/torrinfail/dwmblocks.git" ""
 

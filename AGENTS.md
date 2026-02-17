@@ -113,6 +113,8 @@ Use section banners: `# ============== SECTION NAME ==============`
 ### Suckless config.h Files (C)
 
 - dwm, dmenu, dwmblocks: ship a **complete `config.h`** that replaces `config.def.h`
+- dwm xrdb support: applied via **sed/awk on `dwm.c`/`drw.c`/`drw.h`** at build time
+  (like st, avoids fragile patch conflicts with colorbar/statuscmd)
 - st: customizations applied via **sed on `config.def.h`** at build time
   (avoids maintaining 300+ lines of key mapping boilerplate)
 - Patches go in `<tool>/patches/` as `.diff` files, applied in filename order

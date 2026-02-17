@@ -11,7 +11,7 @@
  *   05-restartsig     -- Restart dwm in-place via keybind or signal
  *   06-colorbar       -- Per-element bar color schemes
  *   07-statuscmd      -- Clickable status bar blocks (dwmblocks integration)
- *   08-xrdb           -- Runtime color reload from X resources (pywal integration)
+ *   08-xrdb           -- Runtime color reload from X resources (applied via sed in setup.sh)
  *
  * Keybindings (Alt = MODKEY):
  *   Alt+hjkl            focus windows
