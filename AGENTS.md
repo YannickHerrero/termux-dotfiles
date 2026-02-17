@@ -34,11 +34,15 @@ termux-dotfiles/
   arch/
     setup.sh                             # Runs inside Arch proot: pacman + build suckless
     home/
-      .xinitrc                           # Session startup (picom, dunst, dwmblocks, dwm)
+      .xinitrc                           # Session startup (wal-restore, picom, dunst, dwmblocks, dwm)
+      .zshrc                             # Shell config (zinit, pywal sequences, modules)
       .config/nvim/                        # Neovim config (lazy.nvim, Lua)
       .config/picom/picom.conf           # Compositor
       .config/dunst/dunstrc              # Notifications
       .config/ranger/rc.conf             # File manager
+      .config/wal/templates/             # Pywal16 user templates (dwm Xresources)
+      .local/bin/set-wallpaper           # Wallpaper selector (nsxiv + pywal16 + feh)
+      .local/bin/wal-restore             # Restore pywal theme on session start
     suckless/
       dwm/config.h                       # dwm configuration (full config.h)
       dwm/patches/                       # dwm patches (.diff files)
@@ -112,14 +116,15 @@ Use section banners: `# ============== SECTION NAME ==============`
 - st: customizations applied via **sed on `config.def.h`** at build time
   (avoids maintaining 300+ lines of key mapping boilerplate)
 - Patches go in `<tool>/patches/` as `.diff` files, applied in filename order
-- Color scheme: **Catppuccin Mocha** across all tools (`#1e1e2e` bg, `#cdd6f4` fg,
-  `#b4befe` Lavender accent)
+- Color scheme: **Catppuccin Mocha** as default, dynamically overridden by
+  **pywal16** when a wallpaper is selected (`#1e1e2e` bg, `#cdd6f4` fg,
+  `#b4befe` Lavender accent are the compiled-in fallback defaults)
 
 ### Current Patch Sets (reference)
 
 - `dwm` (base: `6.5`):
   `01-push-updown`, `02-vanitygaps`, `03-swallow`, `04-hide-vacant-tags`,
-  `05-restartsig`, `06-colorbar`, `07-statuscmd`
+  `05-restartsig`, `06-colorbar`, `07-statuscmd`, `08-xrdb`
 - `st` (base: `0.9.2`):
   `01-ligatures-alpha-scrollback-ringbuffer`,
   `02-scrollback-mouse-changealpha-anysize`
@@ -199,7 +204,53 @@ App (Arch) -> PULSE_SERVER=127.0.0.1 -> PulseAudio (Termux host) -> Android audi
 ### Desktop session launch
 
 `start-desktop.sh` (Termux) -> PulseAudio + Termux-X11 -> `proot-distro login`
--> `.xinitrc` (Arch) -> picom + dunst + dwmblocks + `exec dwm`
+-> `.xinitrc` (Arch) -> wal-restore + picom + dunst + dwmblocks + `exec dwm`
+
+## Theming / Wallpaper System
+
+The desktop supports dynamic color scheme changes via **pywal16**. The
+`set-wallpaper` script (Alt+w) opens nsxiv to pick an image, generates
+a 16-color palette, and live-reloads colors across all components:
+
+### Color reload pipeline
+
+```
+set-wallpaper (Alt+w)
+  -> nsxiv (pick from ~/wallpapers)
+  -> wal -i <image> (generate palette + OSC sequences)
+  -> feh --bg-fill (set wallpaper)
+  -> xrdb -merge (load colors into X server)
+  -> xdotool key alt+F5 (signal dwm to reload via xrdb)
+  -> cat sequences > /dev/pts/* (update running terminals)
+  -> pkill/restart dunst (with new colors)
+  -> pkill -RTMIN dwmblocks (refresh status bar)
+```
+
+### How each tool picks up colors
+
+| Tool      | Method                         | Live reload? |
+|-----------|--------------------------------|--------------|
+| dwm       | xrdb patch reads X resources   | Yes (Alt+F5) |
+| st        | pywal OSC escape sequences     | Yes (instant)|
+| dmenu     | Colors from dwm config vars    | Next launch  |
+| dunst     | Restarted with CLI color args  | Yes          |
+| dwmblocks | Scripts can source colors.sh   | Yes (signal) |
+
+### Pywal user templates
+
+Custom templates live in `arch/home/.config/wal/templates/`. Pywal
+generates output files in `~/.cache/wal/` using these templates:
+
+- `colors-dwm.Xresources` -- maps pywal colors to dwm X resource names
+
+### Session persistence
+
+On startup, `.xinitrc` calls `wal-restore` which:
+1. Merges cached Xresources (so dwm starts with last theme)
+2. Restores the wallpaper via feh
+3. Falls back to Catppuccin Mocha if no theme was ever set
+
+New terminal windows source `~/.cache/wal/sequences` from `.zshrc`.
 
 ## Reference Material
 
