@@ -1,5 +1,10 @@
 export PATH="$HOME/.local/bin:$PATH"
 
+# Apply pywal colors to new terminal windows
+if [[ -f "${HOME}/.cache/wal/sequences" ]]; then
+    cat "${HOME}/.cache/wal/sequences"
+fi
+
 # Zinit
 ZINIT_HOME="${XDG_DATA_HOME:-${HOME}/.local/share}/zinit/zinit.git"
 [ ! -d "$ZINIT_HOME" ] && mkdir -p "$(dirname $ZINIT_HOME)" && git clone https://github.com/zdharma-continuum/zinit.git "$ZINIT_HOME"
